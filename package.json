@@ -1,0 +1,20 @@
+{
+  "name": "lushra",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The Lushra platform workspace.",
+  "packageManager": "pnpm@11.17.0",
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "start": "pnpm --filter web start",
+    "lint": "pnpm --filter web lint",
+    "typecheck": "pnpm --filter web typecheck",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "clean": "find . -type d \\( -name node_modules -o -name .next -o -name dist \\) -prune -exec rm -rf '{}' +"
+  },
+  "devDependencies": {
+    "prettier": "latest"
+  }
+}
