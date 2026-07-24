@@ -1,0 +1,145 @@
+/**
+ * Lushra design tokens — primitive layer.
+ *
+ * Primitives are raw, context-free scale values. They are never consumed
+ * directly by product code — only the semantic layer (themes.css,
+ * typography.css) references them. This separation lets a primitive's
+ * value change without any semantic role changing meaning.
+ */
+
+:root {
+  /* -- Neutral ramp (warm-tinted), used to build the light theme -- */
+  --lushra-neutral-0: #ffffff;
+  --lushra-neutral-25: #faf9f6;
+  --lushra-neutral-50: #f5f3ee;
+  --lushra-neutral-100: #efede7;
+  --lushra-neutral-150: #e4e1d9;
+  --lushra-neutral-300: #8c8574;
+  --lushra-neutral-400: #6c6f72;
+  --lushra-neutral-600: #55585c;
+  --lushra-neutral-900: #17181a;
+
+  /* -- Neutral ramp (independently tuned), used to build the dark theme -- */
+  --lushra-neutral-dark-0: #0b0c0d;
+  --lushra-neutral-dark-25: #08090a;
+  --lushra-neutral-dark-50: #131415;
+  --lushra-neutral-dark-100: #1b1c1e;
+  --lushra-neutral-dark-150: #1e2022;
+  --lushra-neutral-dark-200: #26282a;
+  --lushra-neutral-dark-300: #3a3c3e;
+  --lushra-neutral-dark-400: #1c1d1f;
+  --lushra-neutral-dark-600: #83857f;
+  --lushra-neutral-dark-700: #a8a9a6;
+  --lushra-neutral-dark-900: #f3f1ea;
+
+  /* -- Accent (gold/bronze) -- */
+  --lushra-gold-600: #7e5d26;
+  --lushra-gold-650: #6b4f20;
+  --lushra-gold-700: #573f1a;
+  --lushra-gold-dark-400: #d4af6a;
+  --lushra-gold-dark-300: #debd82;
+  --lushra-gold-dark-500: #c29c55;
+
+  /* -- Status hues -- */
+  --lushra-indigo-600: #4f5df0;
+  --lushra-indigo-400: #7c87ff;
+  --lushra-blue-600: #1868b0;
+  --lushra-blue-400: #4fa3f5;
+  --lushra-green-700: #187048;
+  --lushra-green-400: #4cc38a;
+  --lushra-amber-700: #8f5509;
+  --lushra-amber-400: #e3a438;
+  --lushra-red-600: #c4342a;
+  --lushra-red-400: #f0685c;
+
+  /* -- Spacing scale (4px base unit) -- */
+  --lushra-space-0: 0;
+  --lushra-space-1: 0.25rem;
+  --lushra-space-2: 0.5rem;
+  --lushra-space-3: 0.75rem;
+  --lushra-space-4: 1rem;
+  --lushra-space-5: 1.25rem;
+  --lushra-space-6: 1.5rem;
+  --lushra-space-8: 2rem;
+  --lushra-space-10: 2.5rem;
+  --lushra-space-12: 3rem;
+  --lushra-space-16: 4rem;
+  --lushra-space-20: 5rem;
+  --lushra-space-24: 6rem;
+
+  /* -- Sizing scale (controls, touch targets, icons) -- */
+  --lushra-size-control-sm: 2rem;
+  --lushra-size-control-md: 2.5rem;
+  --lushra-size-control-lg: 3rem;
+  --lushra-size-touch-min: 2.75rem;
+  --lushra-size-icon-sm: 1rem;
+  --lushra-size-icon-md: 1.25rem;
+  --lushra-size-icon-lg: 1.5rem;
+
+  /* -- Radius scale -- */
+  --lushra-radius-xs: 0.25rem;
+  --lushra-radius-sm: 0.5rem;
+  --lushra-radius-md: 0.75rem;
+  --lushra-radius-lg: 1rem;
+  --lushra-radius-xl: 1.5rem;
+  --lushra-radius-full: 999px;
+
+  /* -- Border width scale -- */
+  --lushra-border-width-thin: 1px;
+  --lushra-border-width-thick: 2px;
+
+  /* -- Motion duration scale -- */
+  --lushra-duration-instant: 80ms;
+  --lushra-duration-fast: 120ms;
+  --lushra-duration-base: 200ms;
+  --lushra-duration-slow: 320ms;
+  --lushra-duration-deliberate: 480ms;
+
+  /* -- Motion easing curves -- */
+  --lushra-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --lushra-ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --lushra-ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  --lushra-ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+
+  /* -- Opacity scale -- */
+  --lushra-opacity-disabled: 0.5;
+  --lushra-opacity-hover-scrim: 0.08;
+  --lushra-opacity-press-scrim: 0.12;
+  --lushra-opacity-overlay-scrim: 0.5;
+  --lushra-opacity-subtle: 0.65;
+
+  /* -- Z-index scale (named stacking levels, not raw numbers in product code) -- */
+  --lushra-z-base: 0;
+  --lushra-z-sticky: 100;
+  --lushra-z-dropdown: 200;
+  --lushra-z-overlay: 300;
+  --lushra-z-modal: 400;
+  --lushra-z-toast: 500;
+  --lushra-z-tooltip: 600;
+
+  /* -- Content width scale --
+     CSS custom properties cannot be used inside @media query conditions,
+     so the breakpoint values below are for documentation/JS consumption
+     (see packages/ui/src/tokens/tokens.ts) — component-level @media rules
+     must use the literal pixel values these tokens document. */
+  --lushra-content-width-narrow: 640px;
+  --lushra-content-width-default: 1200px;
+  --lushra-content-width-wide: 1440px;
+
+  /* -- Breakpoint primitives (ownership metadata; see tokens.ts) -- */
+  --lushra-breakpoint-mobile: 0px;
+  --lushra-breakpoint-tablet: 640px;
+  --lushra-breakpoint-laptop: 1024px;
+  --lushra-breakpoint-desktop: 1280px;
+  --lushra-breakpoint-ultrawide: 1920px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --lushra-duration-instant: 1ms;
+    --lushra-duration-fast: 1ms;
+    --lushra-duration-base: 1ms;
+    --lushra-duration-slow: 1ms;
+    --lushra-duration-deliberate: 1ms;
+  }
+}

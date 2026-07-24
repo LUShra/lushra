@@ -1,26 +1,11 @@
-:root {
-  --background: #080909;
-  --surface: #111313;
-  --surface-muted: #171919;
-  --border: #292c2c;
-  --text-primary: #f2f0e9;
-  --text-secondary: #969792;
-  --accent: #b89a5c;
-  --accent-strong: #d0b273;
-  --danger: #e57373;
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
-  --content-width: 1200px;
-}
+@import "@lushra/ui/styles.css";
 
 * {
   box-sizing: border-box;
 }
 
 html {
-  background: var(--background);
-  color-scheme: dark;
+  background: var(--color-canvas);
 }
 
 body {
@@ -29,19 +14,12 @@ body {
   background:
     radial-gradient(
       circle at top right,
-      rgba(184, 154, 92, 0.12),
+      color-mix(in srgb, var(--color-accent) 12%, transparent),
       transparent 34rem
     ),
-    var(--background);
-  color: var(--text-primary);
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+    var(--color-canvas);
+  color: var(--color-text-primary);
+  font-family: var(--lushra-font-body-family);
   text-rendering: optimizeLegibility;
 }
 
@@ -74,7 +52,7 @@ a {
 
 .eyebrow {
   margin: 0 0 16px;
-  color: var(--accent);
+  color: var(--color-accent);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -93,7 +71,7 @@ h1 {
 .hero__description {
   max-width: 620px;
   margin: 28px 0 0;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   font-size: clamp(1rem, 2vw, 1.2rem);
   line-height: 1.75;
 }
@@ -110,15 +88,15 @@ h1 {
   min-height: 48px;
   align-items: center;
   justify-content: center;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  border: var(--lushra-border-width-thin) solid transparent;
+  border-radius: var(--lushra-radius-sm);
   padding: 0 20px;
   font-weight: 650;
   cursor: pointer;
   transition:
-    background-color 160ms ease,
-    border-color 160ms ease,
-    transform 160ms ease;
+    background-color var(--lushra-duration-fast) var(--lushra-ease-standard),
+    border-color var(--lushra-duration-fast) var(--lushra-ease-standard),
+    transform var(--lushra-duration-fast) var(--lushra-ease-standard);
 }
 
 .button:hover {
@@ -126,22 +104,22 @@ h1 {
 }
 
 .button--primary {
-  background: var(--accent);
-  color: #080909;
+  background: var(--color-accent);
+  color: var(--color-accent-foreground);
 }
 
 .button--primary:hover {
-  background: var(--accent-strong);
+  background: var(--color-accent-hover);
 }
 
 .button--secondary {
-  border-color: var(--border);
-  background: var(--surface);
-  color: var(--text-primary);
+  border-color: var(--color-border-default);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
 }
 
 .button--secondary:hover {
-  border-color: var(--accent);
+  border-color: var(--color-accent);
 }
 
 .state-page {
@@ -160,7 +138,7 @@ h1 {
 .state-page p {
   max-width: 560px;
   margin: 0;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   line-height: 1.7;
 }
 
@@ -185,9 +163,9 @@ h1 {
   display: grid;
   width: min(100%, 480px);
   gap: 28px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  background: rgba(17, 19, 19, 0.92);
+  border: var(--lushra-border-width-thin) solid var(--color-border-default);
+  border-radius: var(--lushra-radius-xl);
+  background: color-mix(in srgb, var(--color-surface) 92%, transparent);
   padding: clamp(24px, 6vw, 44px);
 }
 
@@ -198,7 +176,7 @@ h1 {
 
 .auth-description {
   margin: 18px 0 0;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   line-height: 1.7;
 }
 
@@ -213,7 +191,7 @@ h1 {
 }
 
 .form-field span {
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   font-size: 0.9rem;
   font-weight: 650;
 }
@@ -221,37 +199,43 @@ h1 {
 .form-field input {
   width: 100%;
   min-height: 50px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: var(--lushra-border-width-thin) solid var(--color-border-default);
+  border-radius: var(--lushra-radius-sm);
   outline: none;
-  background: var(--background);
-  color: var(--text-primary);
+  background: var(--color-canvas);
+  color: var(--color-text-primary);
   padding: 0 14px;
+  transition: border-color var(--lushra-duration-fast) var(--lushra-ease-standard);
 }
 
 .form-field input::placeholder {
-  color: #6f716e;
+  color: var(--color-text-tertiary);
 }
 
 .form-field input:focus {
-  border-color: var(--accent);
+  border-color: var(--color-accent);
+}
+
+.form-field input:focus-visible {
+  outline: var(--lushra-border-width-thick) solid var(--color-focus);
+  outline-offset: 2px;
 }
 
 .button:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: var(--lushra-opacity-disabled);
   transform: none;
 }
 
 .auth-footer {
   margin: 0;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   line-height: 1.6;
 }
 
 .auth-footer a,
 .back-link {
-  color: var(--accent);
+  color: var(--color-accent);
 }
 
 .back-link {
@@ -271,13 +255,13 @@ h1 {
   display: flex;
   height: 100vh;
   flex-direction: column;
-  border-right: 1px solid var(--border);
-  background: rgba(8, 9, 9, 0.96);
+  border-right: var(--lushra-border-width-thin) solid var(--color-border-default);
+  background: color-mix(in srgb, var(--color-canvas) 96%, transparent);
   padding: 28px 20px;
 }
 
 .dashboard-brand {
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   font-size: 1.2rem;
   font-weight: 750;
   letter-spacing: -0.03em;
@@ -290,22 +274,22 @@ h1 {
 }
 
 .dashboard-nav__link {
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
+  border-radius: var(--lushra-radius-sm);
+  color: var(--color-text-secondary);
   padding: 12px 14px;
   transition:
-    background-color 160ms ease,
-    color 160ms ease;
+    background-color var(--lushra-duration-fast) var(--lushra-ease-standard),
+    color var(--lushra-duration-fast) var(--lushra-ease-standard);
 }
 
 .dashboard-nav__link:hover {
-  background: var(--surface);
-  color: var(--text-primary);
+  background: var(--color-surface-interactive);
+  color: var(--color-text-primary);
 }
 
 .dashboard-sidebar__footer {
   margin-top: auto;
-  border-top: 1px solid var(--border);
+  border-top: var(--lushra-border-width-thin) solid var(--color-border-default);
   padding-top: 20px;
 }
 
@@ -315,7 +299,7 @@ h1 {
 }
 
 .dashboard-sidebar__footer p {
-  color: var(--text-primary);
+  color: var(--color-text-primary);
   font-size: 0.85rem;
   font-weight: 650;
 }
@@ -323,7 +307,7 @@ h1 {
 .dashboard-sidebar__footer span {
   display: block;
   margin-top: 5px;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   font-size: 0.75rem;
 }
 
@@ -334,13 +318,13 @@ h1 {
 .dashboard-header {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: var(--lushra-z-sticky);
   display: flex;
   min-height: 72px;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid var(--border);
-  background: rgba(8, 9, 9, 0.9);
+  border-bottom: var(--lushra-border-width-thin) solid var(--color-border-default);
+  background: color-mix(in srgb, var(--color-canvas) 90%, transparent);
   padding: 0 32px;
   backdrop-filter: blur(18px);
 }
@@ -350,7 +334,7 @@ h1 {
 }
 
 .dashboard-header__label {
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -367,16 +351,16 @@ h1 {
   width: 38px;
   height: 38px;
   place-items: center;
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  background: var(--surface);
-  color: var(--accent);
+  border: var(--lushra-border-width-thin) solid var(--color-border-default);
+  border-radius: var(--lushra-radius-full);
+  background: var(--color-surface);
+  color: var(--color-accent);
   font-size: 0.78rem;
   font-weight: 750;
 }
 
 .dashboard-content {
-  width: min(100%, 1440px);
+  width: min(100%, var(--lushra-content-width-wide));
   margin: 0 auto;
   padding: 48px 32px 80px;
 }
@@ -401,7 +385,7 @@ h1 {
 .dashboard-intro > p {
   max-width: 520px;
   margin: 0;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   line-height: 1.7;
 }
 
@@ -413,9 +397,9 @@ h1 {
 
 .metric-card,
 .dashboard-panel {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: var(--surface);
+  border: var(--lushra-border-width-thin) solid var(--color-border-default);
+  border-radius: var(--lushra-radius-md);
+  background: var(--color-surface);
 }
 
 .metric-card {
@@ -423,7 +407,7 @@ h1 {
 }
 
 .metric-card span {
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   font-size: 0.85rem;
 }
 
@@ -436,7 +420,7 @@ h1 {
 
 .metric-card p {
   margin: 10px 0 0;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   font-size: 0.85rem;
 }
 
@@ -457,10 +441,11 @@ h1 {
 }
 
 .status-badge {
-  border: 1px solid rgba(184, 154, 92, 0.4);
-  border-radius: 999px;
-  background: rgba(184, 154, 92, 0.08);
-  color: var(--accent);
+  border: var(--lushra-border-width-thin) solid
+    color-mix(in srgb, var(--color-accent) 40%, transparent);
+  border-radius: var(--lushra-radius-full);
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+  color: var(--color-accent);
   padding: 7px 11px;
   font-size: 0.74rem;
   font-weight: 700;
@@ -475,12 +460,12 @@ h1 {
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr);
   gap: 18px;
-  border-top: 1px solid var(--border);
+  border-top: var(--lushra-border-width-thin) solid var(--color-border-default);
   padding: 22px 0;
 }
 
 .setup-item > span {
-  color: var(--accent);
+  color: var(--color-accent);
   font-size: 0.78rem;
   font-weight: 750;
 }
@@ -492,7 +477,7 @@ h1 {
 .setup-item p,
 .empty-panel p {
   margin: 7px 0 0;
-  color: var(--text-secondary);
+  color: var(--color-text-secondary);
   line-height: 1.6;
 }
 
@@ -509,7 +494,7 @@ h1 {
     position: static;
     height: auto;
     border-right: 0;
-    border-bottom: 1px solid var(--border);
+    border-bottom: var(--lushra-border-width-thin) solid var(--color-border-default);
   }
 
   .dashboard-nav {

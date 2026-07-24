@@ -1,0 +1,13 @@
+/**
+ * Lushra design token foundation — single entry point.
+ *
+ * Consuming applications import only this file:
+ *   @import "@lushra/ui/styles.css";
+ *
+ * Order matters: primitives must exist before the semantic layers that
+ * reference them via var().
+ */
+
+@import "./primitives.css";
+@import "./typography.css";
+@import "./themes.css";

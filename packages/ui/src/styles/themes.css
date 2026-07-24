@@ -1,0 +1,181 @@
+/**
+ * Lushra design tokens — semantic theme layer.
+ *
+ * Semantic tokens are the only tokens product code should reference. Roles
+ * are identical between light and dark; only the primitive each role points
+ * at changes. Dark is not light inverted — every value below was chosen and
+ * contrast-checked independently (Visual Language §10).
+ *
+ * Resolution order: light values on :root are the default. A system dark
+ * preference overrides them. An explicit [data-theme] attribute — reserved
+ * here for a future theme switcher; nothing sets it yet — overrides both.
+ * Because this is pure CSS with no script, there is no flash-of-wrong-theme
+ * risk: the correct theme is resolved before first paint.
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces */
+  --color-canvas: var(--lushra-neutral-25);
+  --color-surface: #fffdf9;
+  --color-surface-raised: var(--lushra-neutral-0);
+  --color-surface-inset: var(--lushra-neutral-50);
+  --color-surface-interactive: var(--lushra-neutral-100);
+
+  /* Text */
+  --color-text-primary: var(--lushra-neutral-900);
+  --color-text-secondary: var(--lushra-neutral-600);
+  --color-text-tertiary: var(--lushra-neutral-400);
+  --color-text-inverse: var(--lushra-neutral-dark-900);
+
+  /* Borders */
+  --color-border-default: var(--lushra-neutral-150);
+  --color-border-strong: var(--lushra-neutral-300);
+  --color-border-subtle: var(--lushra-neutral-100);
+
+  /* Accent */
+  --color-accent: var(--lushra-gold-600);
+  --color-accent-hover: var(--lushra-gold-650);
+  --color-accent-active: var(--lushra-gold-700);
+  --color-accent-foreground: var(--lushra-neutral-0);
+
+  /* Interaction & status */
+  --color-focus: var(--lushra-indigo-600);
+  --color-info: var(--lushra-blue-600);
+  --color-success: var(--lushra-green-700);
+  --color-warning: var(--lushra-amber-700);
+  --color-danger: var(--lushra-red-600);
+  --color-selection: rgba(126, 93, 38, 0.18);
+
+  /* Elevation */
+  --shadow-raised:
+    0 1px 2px rgba(23, 24, 26, 0.06), 0 1px 1px rgba(23, 24, 26, 0.04);
+  --shadow-overlay:
+    0 12px 32px rgba(23, 24, 26, 0.14), 0 4px 8px rgba(23, 24, 26, 0.08);
+  --shadow-none: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --color-canvas: var(--lushra-neutral-dark-0);
+    --color-surface: var(--lushra-neutral-dark-50);
+    --color-surface-raised: var(--lushra-neutral-dark-100);
+    --color-surface-inset: var(--lushra-neutral-dark-25);
+    --color-surface-interactive: var(--lushra-neutral-dark-150);
+
+    --color-text-primary: var(--lushra-neutral-dark-900);
+    --color-text-secondary: var(--lushra-neutral-dark-700);
+    --color-text-tertiary: var(--lushra-neutral-dark-600);
+    --color-text-inverse: var(--lushra-neutral-900);
+
+    --color-border-default: var(--lushra-neutral-dark-200);
+    --color-border-strong: var(--lushra-neutral-dark-300);
+    --color-border-subtle: var(--lushra-neutral-dark-400);
+
+    --color-accent: var(--lushra-gold-dark-400);
+    --color-accent-hover: var(--lushra-gold-dark-300);
+    --color-accent-active: var(--lushra-gold-dark-500);
+    --color-accent-foreground: var(--lushra-neutral-900);
+
+    --color-focus: var(--lushra-indigo-400);
+    --color-info: var(--lushra-blue-400);
+    --color-success: var(--lushra-green-400);
+    --color-warning: var(--lushra-amber-400);
+    --color-danger: var(--lushra-red-400);
+    --color-selection: rgba(212, 175, 106, 0.28);
+
+    --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-overlay: 0 16px 40px rgba(0, 0, 0, 0.55), 0 4px 12px rgba(0, 0, 0, 0.35);
+  }
+}
+
+/* Explicit override hook for a future theme switcher. Higher specificity
+   than both rules above in both directions, so it always wins once set. */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --color-canvas: var(--lushra-neutral-25);
+  --color-surface: #fffdf9;
+  --color-surface-raised: var(--lushra-neutral-0);
+  --color-surface-inset: var(--lushra-neutral-50);
+  --color-surface-interactive: var(--lushra-neutral-100);
+
+  --color-text-primary: var(--lushra-neutral-900);
+  --color-text-secondary: var(--lushra-neutral-600);
+  --color-text-tertiary: var(--lushra-neutral-400);
+  --color-text-inverse: var(--lushra-neutral-dark-900);
+
+  --color-border-default: var(--lushra-neutral-150);
+  --color-border-strong: var(--lushra-neutral-300);
+  --color-border-subtle: var(--lushra-neutral-100);
+
+  --color-accent: var(--lushra-gold-600);
+  --color-accent-hover: var(--lushra-gold-650);
+  --color-accent-active: var(--lushra-gold-700);
+  --color-accent-foreground: var(--lushra-neutral-0);
+
+  --color-focus: var(--lushra-indigo-600);
+  --color-info: var(--lushra-blue-600);
+  --color-success: var(--lushra-green-700);
+  --color-warning: var(--lushra-amber-700);
+  --color-danger: var(--lushra-red-600);
+  --color-selection: rgba(126, 93, 38, 0.18);
+
+  --shadow-raised:
+    0 1px 2px rgba(23, 24, 26, 0.06), 0 1px 1px rgba(23, 24, 26, 0.04);
+  --shadow-overlay:
+    0 12px 32px rgba(23, 24, 26, 0.14), 0 4px 8px rgba(23, 24, 26, 0.08);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-canvas: var(--lushra-neutral-dark-0);
+  --color-surface: var(--lushra-neutral-dark-50);
+  --color-surface-raised: var(--lushra-neutral-dark-100);
+  --color-surface-inset: var(--lushra-neutral-dark-25);
+  --color-surface-interactive: var(--lushra-neutral-dark-150);
+
+  --color-text-primary: var(--lushra-neutral-dark-900);
+  --color-text-secondary: var(--lushra-neutral-dark-700);
+  --color-text-tertiary: var(--lushra-neutral-dark-600);
+  --color-text-inverse: var(--lushra-neutral-900);
+
+  --color-border-default: var(--lushra-neutral-dark-200);
+  --color-border-strong: var(--lushra-neutral-dark-300);
+  --color-border-subtle: var(--lushra-neutral-dark-400);
+
+  --color-accent: var(--lushra-gold-dark-400);
+  --color-accent-hover: var(--lushra-gold-dark-300);
+  --color-accent-active: var(--lushra-gold-dark-500);
+  --color-accent-foreground: var(--lushra-neutral-900);
+
+  --color-focus: var(--lushra-indigo-400);
+  --color-info: var(--lushra-blue-400);
+  --color-success: var(--lushra-green-400);
+  --color-warning: var(--lushra-amber-400);
+  --color-danger: var(--lushra-red-400);
+  --color-selection: rgba(212, 175, 106, 0.28);
+
+  --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-overlay: 0 16px 40px rgba(0, 0, 0, 0.55), 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+::selection {
+  background-color: var(--color-selection);
+  color: var(--color-text-primary);
+}
+
+/* Forced-colors mode (Windows High Contrast, etc.): let the system palette
+   govern color, but pin focus visibility and structural borders so neither
+   disappears — the one thing this mode must never break. */
+@media (forced-colors: active) {
+  :root {
+    --color-focus: Highlight;
+    --color-border-default: CanvasText;
+    --color-border-strong: CanvasText;
+  }
+}
