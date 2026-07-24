@@ -9,10 +9,13 @@
     ".": "./src/index.ts"
   },
   "scripts": {
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
+    "@lushra/eslint-config": "workspace:*",
     "@lushra/typescript-config": "workspace:*",
+    "eslint": "9.39.5",
     "typescript": "^5.9.0"
   }
 }
