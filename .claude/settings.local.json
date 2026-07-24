@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C /root/lushra status --short docs/)",
+      "Bash(git -C /root/lushra status --short docs/08_ENGINEERING_STANDARDS.md)",
+      "Bash(pnpm --version)",
+      "Bash(node -e ' *)",
+      "Bash(pnpm install *)"
+    ]
+  }
+}
