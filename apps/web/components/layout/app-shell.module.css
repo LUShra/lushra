@@ -1,0 +1,25 @@
+.root {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 100dvh;
+}
+
+@media (min-width: 1024px) {
+  .root {
+    grid-template-columns: auto 1fr;
+  }
+}
+
+.column {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+}
+
+.main:focus {
+  outline: none;
+}

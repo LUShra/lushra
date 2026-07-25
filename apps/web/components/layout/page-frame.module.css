@@ -1,0 +1,7 @@
+.root {
+  padding-block: var(--lushra-space-8);
+}
+
+.description {
+  max-width: var(--lushra-measure-reading);
+}
