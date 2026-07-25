@@ -1,0 +1,64 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--lushra-space-1);
+  border: var(--lushra-border-width-thin) solid transparent;
+  border-radius: var(--lushra-radius-full);
+  padding: 0.1875rem var(--lushra-space-2);
+  font-family: var(--lushra-font-label-family);
+  font-size: var(--lushra-font-label-size);
+  font-weight: var(--lushra-font-label-weight);
+  line-height: var(--lushra-font-label-line-height);
+  letter-spacing: var(--lushra-font-label-letter-spacing);
+  white-space: nowrap;
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--lushra-size-icon-sm);
+  height: var(--lushra-size-icon-sm);
+}
+
+.neutral {
+  border-color: var(--color-border-default);
+  background-color: var(--color-surface-interactive);
+  color: var(--color-text-secondary);
+}
+
+.accent {
+  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  background-color: color-mix(in srgb, var(--color-accent) 12%, transparent);
+  color: var(--color-accent);
+}
+
+.info {
+  border-color: color-mix(in srgb, var(--color-info) 40%, transparent);
+  background-color: color-mix(in srgb, var(--color-info) 12%, transparent);
+  color: var(--color-info);
+}
+
+.success {
+  border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
+  background-color: color-mix(in srgb, var(--color-success) 12%, transparent);
+  color: var(--color-success);
+}
+
+.warning {
+  border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
+  background-color: color-mix(in srgb, var(--color-warning) 12%, transparent);
+  color: var(--color-warning);
+}
+
+.danger {
+  border-color: color-mix(in srgb, var(--color-danger) 40%, transparent);
+  background-color: color-mix(in srgb, var(--color-danger) 12%, transparent);
+  color: var(--color-danger);
+}
+
+@media (forced-colors: active) {
+  .root {
+    border-color: CanvasText;
+  }
+}

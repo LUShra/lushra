@@ -1,0 +1,36 @@
+.root {
+  border-radius: var(--lushra-radius-md);
+}
+
+.base {
+  background-color: var(--color-canvas);
+}
+
+.raised {
+  border: var(--lushra-border-width-thin) solid var(--color-border-default);
+  background-color: var(--color-surface);
+  box-shadow: var(--shadow-raised);
+}
+
+.inset {
+  border: var(--lushra-border-width-thin) solid var(--color-border-subtle);
+  background-color: var(--color-surface-inset);
+}
+
+.interactive {
+  border: var(--lushra-border-width-thin) solid var(--color-border-default);
+  background-color: var(--color-surface);
+  transition:
+    background-color var(--lushra-duration-fast) var(--lushra-ease-standard),
+    border-color var(--lushra-duration-fast) var(--lushra-ease-standard);
+}
+
+.interactive:hover {
+  border-color: var(--color-border-strong);
+  background-color: var(--color-surface-interactive);
+}
+
+.interactive:focus-visible {
+  outline: var(--lushra-border-width-thick) solid var(--color-focus);
+  outline-offset: 2px;
+}

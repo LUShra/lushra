@@ -1,0 +1,102 @@
+.root {
+  margin: 0;
+}
+
+.bodyLarge {
+  font-family: var(--lushra-font-body-large-family);
+  font-size: var(--lushra-font-body-large-size);
+  font-weight: var(--lushra-font-body-large-weight);
+  line-height: var(--lushra-font-body-large-line-height);
+  letter-spacing: var(--lushra-font-body-large-letter-spacing);
+}
+
+.body {
+  font-family: var(--lushra-font-body-family);
+  font-size: var(--lushra-font-body-size);
+  font-weight: var(--lushra-font-body-weight);
+  line-height: var(--lushra-font-body-line-height);
+  letter-spacing: var(--lushra-font-body-letter-spacing);
+}
+
+.bodySmall {
+  font-family: var(--lushra-font-body-small-family);
+  font-size: var(--lushra-font-body-small-size);
+  font-weight: var(--lushra-font-body-small-weight);
+  line-height: var(--lushra-font-body-small-line-height);
+  letter-spacing: var(--lushra-font-body-small-letter-spacing);
+}
+
+.label {
+  font-family: var(--lushra-font-label-family);
+  font-size: var(--lushra-font-label-size);
+  font-weight: var(--lushra-font-label-weight);
+  line-height: var(--lushra-font-label-line-height);
+  letter-spacing: var(--lushra-font-label-letter-spacing);
+}
+
+.caption {
+  font-family: var(--lushra-font-caption-family);
+  font-size: var(--lushra-font-caption-size);
+  font-weight: var(--lushra-font-caption-weight);
+  line-height: var(--lushra-font-caption-line-height);
+  letter-spacing: var(--lushra-font-caption-letter-spacing);
+}
+
+.code {
+  font-family: var(--lushra-font-code-family);
+  font-size: var(--lushra-font-code-size);
+  font-weight: var(--lushra-font-code-weight);
+  line-height: var(--lushra-font-code-line-height);
+  letter-spacing: var(--lushra-font-code-letter-spacing);
+}
+
+.numeric {
+  font-family: var(--lushra-font-numeric-family);
+  font-size: var(--lushra-font-numeric-size);
+  font-weight: var(--lushra-font-numeric-weight);
+  line-height: var(--lushra-font-numeric-line-height);
+  letter-spacing: var(--lushra-font-numeric-letter-spacing);
+  font-variant-numeric: var(--lushra-font-numeric-variant);
+}
+
+.truncate {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.colorPrimary {
+  color: var(--color-text-primary);
+}
+
+.colorSecondary {
+  color: var(--color-text-secondary);
+}
+
+.colorTertiary {
+  color: var(--color-text-tertiary);
+}
+
+.colorInverse {
+  color: var(--color-text-inverse);
+}
+
+.colorAccent {
+  color: var(--color-accent);
+}
+
+.colorInfo {
+  color: var(--color-info);
+}
+
+.colorSuccess {
+  color: var(--color-success);
+}
+
+.colorWarning {
+  color: var(--color-warning);
+}
+
+.colorDanger {
+  color: var(--color-danger);
+}

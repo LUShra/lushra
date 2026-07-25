@@ -1,0 +1,42 @@
+.root {
+  display: inline-block;
+  flex-shrink: 0;
+  border-radius: var(--lushra-radius-full);
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  animation: spin 700ms linear infinite;
+}
+
+.small {
+  width: var(--lushra-size-icon-sm);
+  height: var(--lushra-size-icon-sm);
+}
+
+.medium {
+  width: var(--lushra-size-icon-md);
+  height: var(--lushra-size-icon-md);
+  border-width: 2px;
+}
+
+.large {
+  width: var(--lushra-size-icon-lg);
+  height: var(--lushra-size-icon-lg);
+  border-width: 3px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* This animation is intentionally not driven by the shared
+   --lushra-duration-* tokens: those collapse to 1ms under reduced motion,
+   which would make a continuous spin strobe rather than stop. The spinner
+   gets its own override that removes rotation entirely, per Interaction
+   System §5 and Design Constitution §24. */
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    animation: none;
+  }
+}

@@ -1,0 +1,23 @@
+.root {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: var(--lushra-space-5);
+}
+
+@media (min-width: 640px) {
+  .root {
+    padding-inline: var(--lushra-space-8);
+  }
+}
+
+.narrow {
+  max-width: var(--lushra-content-width-narrow);
+}
+
+.default {
+  max-width: var(--lushra-content-width-default);
+}
+
+.wide {
+  max-width: var(--lushra-content-width-wide);
+}

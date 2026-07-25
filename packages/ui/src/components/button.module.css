@@ -1,0 +1,161 @@
+.root {
+  display: inline-flex;
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  gap: var(--lushra-space-2);
+  border: var(--lushra-border-width-thin) solid transparent;
+  border-radius: var(--lushra-radius-sm);
+  font-family: var(--lushra-font-family-sans);
+  font-weight: 600;
+  white-space: nowrap;
+  user-select: none;
+  touch-action: manipulation;
+  cursor: pointer;
+  transition:
+    background-color var(--lushra-duration-fast) var(--lushra-ease-standard),
+    border-color var(--lushra-duration-fast) var(--lushra-ease-standard),
+    color var(--lushra-duration-fast) var(--lushra-ease-standard);
+}
+
+.root:focus-visible {
+  outline: var(--lushra-border-width-thick) solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.root:disabled {
+  cursor: not-allowed;
+  opacity: var(--lushra-opacity-disabled);
+}
+
+/* Loading is a distinct state from disabled: it must stay visually
+   undimmed so a user can tell "processing" apart from "unavailable". */
+.root.loading:disabled {
+  cursor: progress;
+  opacity: 1;
+}
+
+/* -- Sizes -- */
+
+.small {
+  height: var(--lushra-size-control-sm);
+  padding-inline: var(--lushra-space-3);
+  font-size: var(--lushra-font-body-small-size);
+}
+
+.medium {
+  height: var(--lushra-size-control-md);
+  padding-inline: var(--lushra-space-4);
+  font-size: var(--lushra-font-body-size);
+}
+
+.large {
+  height: var(--lushra-size-control-lg);
+  padding-inline: var(--lushra-space-5);
+  font-size: var(--lushra-font-body-large-size);
+}
+
+/* Small buttons keep a compact visual size for mouse/trackpad use, but
+   coarse (touch) pointers get the accessible touch minimum as the actual
+   hit area, per Design Constitution §17 and Responsive System §16. */
+@media (pointer: coarse) {
+  .small {
+    min-height: var(--lushra-size-touch-min);
+  }
+}
+
+/* -- Icon slot -- */
+
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: var(--lushra-size-icon-sm);
+  height: var(--lushra-size-icon-sm);
+}
+
+.large .icon {
+  width: var(--lushra-size-icon-md);
+  height: var(--lushra-size-icon-md);
+}
+
+.label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* -- Variants -- */
+
+.primary {
+  background-color: var(--color-accent);
+  color: var(--color-accent-foreground);
+}
+
+.primary:hover:not(:disabled) {
+  background-color: var(--color-accent-hover);
+}
+
+.primary:active:not(:disabled) {
+  background-color: var(--color-accent-active);
+}
+
+.secondary {
+  border-color: var(--color-border-default);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.secondary:hover:not(:disabled) {
+  border-color: var(--color-border-strong);
+  background-color: var(--color-surface-interactive);
+}
+
+.secondary:active:not(:disabled) {
+  background-color: var(--color-surface-inset);
+}
+
+.subtle {
+  background-color: var(--color-surface-interactive);
+  color: var(--color-text-primary);
+}
+
+.subtle:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--color-surface-interactive), var(--color-text-primary) 8%);
+}
+
+.subtle:active:not(:disabled) {
+  background-color: color-mix(in srgb, var(--color-surface-interactive), var(--color-text-primary) 12%);
+}
+
+.ghost {
+  background-color: transparent;
+  color: var(--color-text-primary);
+}
+
+.ghost:hover:not(:disabled) {
+  background-color: var(--color-surface-interactive);
+}
+
+.ghost:active:not(:disabled) {
+  background-color: var(--color-surface-inset);
+}
+
+.danger {
+  background-color: var(--color-danger);
+  color: var(--color-text-inverse);
+}
+
+.danger:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+.danger:active:not(:disabled) {
+  filter: brightness(0.85);
+}
+
+@media (forced-colors: active) {
+  .root {
+    border-color: ButtonText;
+  }
+}
