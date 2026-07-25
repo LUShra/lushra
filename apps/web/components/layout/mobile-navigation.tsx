@@ -91,6 +91,7 @@ export function MobileNavigation() {
         <MenuIcon />
       </IconButton>
 
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions -- native <dialog> backdrop dismissal; Escape is already handled natively via the dialog's own cancel/close events. */}
       <dialog
         aria-label="Mobile navigation"
         className={styles.dialog}
