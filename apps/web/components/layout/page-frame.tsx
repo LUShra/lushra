@@ -18,8 +18,7 @@ export function PageFrame({ eyebrow, title, description, actions, children }: Pa
         <Inline align="start" gap={6} justify="between" wrap>
           <Stack gap={2}>
             {eyebrow ? (
-              // eslint-disable-next-line jsx-a11y/aria-role -- `role` here is
-              // @lushra/ui's Text typography-role prop ("label"), not an ARIA role.
+              // eslint-disable-next-line jsx-a11y/aria-role -- Text's `role` is a typography role, not an ARIA role.
               <Text color="secondary" role="label">
                 {eyebrow}
               </Text>
