@@ -1,0 +1,13 @@
+.root {
+  display: inline-block;
+  color: var(--color-text-primary);
+  font-family: var(--lushra-font-label-family);
+  font-size: var(--lushra-font-label-size);
+  font-weight: var(--lushra-font-label-weight);
+  line-height: var(--lushra-font-label-line-height);
+  letter-spacing: var(--lushra-font-label-letter-spacing);
+}
+
+.required {
+  color: var(--color-danger);
+}

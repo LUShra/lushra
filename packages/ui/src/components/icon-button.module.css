@@ -1,0 +1,114 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: var(--lushra-border-width-thin) solid transparent;
+  border-radius: var(--lushra-radius-sm);
+  cursor: pointer;
+  transition:
+    background-color var(--lushra-duration-fast) var(--lushra-ease-standard),
+    border-color var(--lushra-duration-fast) var(--lushra-ease-standard),
+    color var(--lushra-duration-fast) var(--lushra-ease-standard);
+}
+
+.root:focus-visible {
+  outline: var(--lushra-border-width-thick) solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.root:disabled {
+  cursor: not-allowed;
+  opacity: var(--lushra-opacity-disabled);
+}
+
+.root.loading:disabled {
+  cursor: progress;
+  opacity: 1;
+}
+
+/* -- Sizes: square, matching Button's control-size scale -- */
+
+.small {
+  width: var(--lushra-size-control-sm);
+  height: var(--lushra-size-control-sm);
+}
+
+.medium {
+  width: var(--lushra-size-control-md);
+  height: var(--lushra-size-control-md);
+}
+
+.large {
+  width: var(--lushra-size-control-lg);
+  height: var(--lushra-size-control-lg);
+}
+
+@media (pointer: coarse) {
+  .small {
+    min-width: var(--lushra-size-touch-min);
+    min-height: var(--lushra-size-touch-min);
+  }
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--lushra-size-icon-sm);
+  height: var(--lushra-size-icon-sm);
+}
+
+.large .icon {
+  width: var(--lushra-size-icon-md);
+  height: var(--lushra-size-icon-md);
+}
+
+/* -- Variants -- */
+
+.neutral {
+  background-color: transparent;
+  color: var(--color-text-primary);
+}
+
+.neutral:hover:not(:disabled) {
+  background-color: var(--color-surface-interactive);
+}
+
+.neutral:active:not(:disabled) {
+  background-color: var(--color-surface-inset);
+}
+
+.subtle {
+  background-color: var(--color-surface-interactive);
+  color: var(--color-text-secondary);
+}
+
+.subtle:hover:not(:disabled) {
+  color: var(--color-text-primary);
+  background-color: color-mix(in srgb, var(--color-surface-interactive), var(--color-text-primary) 8%);
+}
+
+.subtle:active:not(:disabled) {
+  background-color: color-mix(in srgb, var(--color-surface-interactive), var(--color-text-primary) 12%);
+}
+
+.danger {
+  background-color: transparent;
+  color: var(--color-danger);
+}
+
+.danger:hover:not(:disabled) {
+  background-color: var(--color-danger);
+  color: var(--color-text-inverse);
+}
+
+.danger:active:not(:disabled) {
+  filter: brightness(0.9);
+}
+
+@media (forced-colors: active) {
+  .root {
+    border-color: ButtonText;
+  }
+}

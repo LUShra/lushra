@@ -1,0 +1,14 @@
+.root {
+  display: grid;
+  gap: var(--lushra-space-2);
+}
+
+.description {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-family: var(--lushra-font-caption-family);
+  font-size: var(--lushra-font-caption-size);
+  font-weight: var(--lushra-font-caption-weight);
+  line-height: var(--lushra-font-caption-line-height);
+  letter-spacing: var(--lushra-font-caption-letter-spacing);
+}

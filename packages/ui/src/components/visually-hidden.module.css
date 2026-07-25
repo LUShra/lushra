@@ -1,0 +1,26 @@
+.root {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  border: 0;
+}
+
+/* Opt-in "skip link" style reveal: becomes visible in normal flow when it
+   (or a descendant) receives focus. Only meaningful when the consumer has
+   given the element a legitimate reason to be focusable. */
+.focusable:focus-within {
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  clip-path: none;
+  white-space: normal;
+}

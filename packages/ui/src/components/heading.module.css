@@ -1,0 +1,51 @@
+.root {
+  margin: 0;
+  font-family: var(--lushra-font-family-sans);
+}
+
+.display {
+  font-size: var(--lushra-font-display-size);
+  font-weight: var(--lushra-font-display-weight);
+  line-height: var(--lushra-font-display-line-height);
+  letter-spacing: var(--lushra-font-display-letter-spacing);
+}
+
+.heading1 {
+  font-size: var(--lushra-font-heading-1-size);
+  font-weight: var(--lushra-font-heading-1-weight);
+  line-height: var(--lushra-font-heading-1-line-height);
+  letter-spacing: var(--lushra-font-heading-1-letter-spacing);
+}
+
+.heading2 {
+  font-size: var(--lushra-font-heading-2-size);
+  font-weight: var(--lushra-font-heading-2-weight);
+  line-height: var(--lushra-font-heading-2-line-height);
+  letter-spacing: var(--lushra-font-heading-2-letter-spacing);
+}
+
+.heading3 {
+  font-size: var(--lushra-font-heading-3-size);
+  font-weight: var(--lushra-font-heading-3-weight);
+  line-height: var(--lushra-font-heading-3-line-height);
+  letter-spacing: var(--lushra-font-heading-3-letter-spacing);
+}
+
+.heading4 {
+  font-size: var(--lushra-font-heading-4-size);
+  font-weight: var(--lushra-font-heading-4-weight);
+  line-height: var(--lushra-font-heading-4-line-height);
+  letter-spacing: var(--lushra-font-heading-4-letter-spacing);
+}
+
+.colorPrimary {
+  color: var(--color-text-primary);
+}
+
+.colorSecondary {
+  color: var(--color-text-secondary);
+}
+
+.colorInverse {
+  color: var(--color-text-inverse);
+}
