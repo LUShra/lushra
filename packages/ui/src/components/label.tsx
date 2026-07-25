@@ -1,3 +1,5 @@
+"use client";
+
 import type { LabelHTMLAttributes, ReactNode, Ref } from "react";
 import { forwardRef } from "react";
 

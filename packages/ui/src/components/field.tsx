@@ -1,3 +1,5 @@
+"use client";
+
 import type { HTMLAttributes, ReactNode } from "react";
 import { createContext, useContext, useId } from "react";
 

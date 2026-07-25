@@ -1,3 +1,5 @@
+"use client";
+
 import type { InputHTMLAttributes, Ref } from "react";
 import { forwardRef } from "react";
 
