@@ -1,0 +1,48 @@
+.root {
+  display: flex;
+  align-items: center;
+  gap: var(--lushra-space-3);
+  border-left: var(--lushra-border-width-thick) solid transparent;
+  border-radius: var(--lushra-radius-sm);
+  padding: var(--lushra-space-2) var(--lushra-space-3);
+  color: var(--color-text-secondary);
+  font-family: var(--lushra-font-body-family);
+  font-size: var(--lushra-font-body-small-size);
+  font-weight: 500;
+  transition:
+    background-color var(--lushra-duration-fast) var(--lushra-ease-standard),
+    color var(--lushra-duration-fast) var(--lushra-ease-standard),
+    border-color var(--lushra-duration-fast) var(--lushra-ease-standard);
+}
+
+.root:hover {
+  background-color: var(--color-surface-interactive);
+  color: var(--color-text-primary);
+}
+
+.root:focus-visible {
+  outline: var(--lushra-border-width-thick) solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.active {
+  border-left-color: var(--color-accent);
+  background-color: var(--color-surface-interactive);
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: var(--lushra-size-icon-sm);
+  height: var(--lushra-size-icon-sm);
+}
+
+.label {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

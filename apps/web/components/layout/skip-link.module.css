@@ -1,0 +1,21 @@
+.root {
+  position: absolute;
+  z-index: var(--lushra-z-toast);
+  top: -100%;
+  left: var(--lushra-space-4);
+  overflow: hidden;
+  border-radius: var(--lushra-radius-sm);
+  background-color: var(--color-accent);
+  color: var(--color-accent-foreground);
+  font-family: var(--lushra-font-family-sans);
+  font-size: var(--lushra-font-body-small-size);
+  font-weight: 600;
+  padding: var(--lushra-space-2) var(--lushra-space-4);
+  transition: top var(--lushra-duration-fast) var(--lushra-ease-standard);
+}
+
+.root:focus-visible {
+  top: var(--lushra-space-4);
+  outline: var(--lushra-border-width-thick) solid var(--color-focus);
+  outline-offset: 2px;
+}

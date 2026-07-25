@@ -41,7 +41,7 @@ export default function SignInPage() {
         return;
       }
 
-      router.replace("/dashboard");
+      router.replace("/workspace");
       router.refresh();
     } catch (caughtError) {
       setError(

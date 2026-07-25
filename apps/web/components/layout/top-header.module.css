@@ -1,0 +1,66 @@
+.root {
+  position: sticky;
+  top: 0;
+  z-index: var(--lushra-z-sticky);
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: var(--lushra-border-width-thin) solid var(--color-border-default);
+  background-color: var(--color-canvas);
+  padding-inline: var(--lushra-space-4);
+}
+
+@media (min-width: 1024px) {
+  .root {
+    min-height: 4rem;
+    padding-inline: var(--lushra-space-8);
+  }
+}
+
+.leading {
+  display: flex;
+  align-items: center;
+  gap: var(--lushra-space-3);
+}
+
+.wordmark {
+  color: var(--color-text-primary);
+  font-size: var(--lushra-font-heading-4-size);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+@media (min-width: 1024px) {
+  .wordmark {
+    display: none;
+  }
+}
+
+/* Approved local exception (Milestone 3 plan): the account action must be a
+   real anchor to /workspace/settings, but no Milestone 2B primitive renders
+   an anchor. Sized and styled from the same tokens IconButton uses, rather
+   than modifying the approved 2B component APIs. */
+.accountAction {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: var(--lushra-size-control-md);
+  height: var(--lushra-size-control-md);
+  border-radius: var(--lushra-radius-sm);
+  color: var(--color-text-secondary);
+  transition:
+    background-color var(--lushra-duration-fast) var(--lushra-ease-standard),
+    color var(--lushra-duration-fast) var(--lushra-ease-standard);
+}
+
+.accountAction:hover {
+  background-color: var(--color-surface-interactive);
+  color: var(--color-text-primary);
+}
+
+.accountAction:focus-visible {
+  outline: var(--lushra-border-width-thick) solid var(--color-focus);
+  outline-offset: 2px;
+}
