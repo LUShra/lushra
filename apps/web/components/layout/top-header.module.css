@@ -37,6 +37,37 @@
   }
 }
 
+/* Below 1024px the wordmark alone identifies the app; the workspace name
+   stays in the accessibility tree via the same clip technique as
+   .email, rather than `display: none`, so it is never entirely
+   unavailable -- there just is not visual room for it next to the
+   wordmark and menu button on a narrow viewport. */
+.workspaceName {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  border: 0;
+}
+
+@media (min-width: 1024px) {
+  .workspaceName {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    clip-path: none;
+    white-space: normal;
+  }
+}
+
 /* Approved local exception (Milestone 3 plan): the account action must be a
    real anchor to /workspace/settings, but no Milestone 2B primitive renders
    an anchor. Sized and styled from the same tokens IconButton uses, rather

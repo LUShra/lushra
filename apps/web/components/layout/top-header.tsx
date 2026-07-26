@@ -1,3 +1,4 @@
+import { Text } from "@lushra/ui";
 import Link from "next/link";
 
 import { SignOutButton } from "@/features/auth/sign-out-button";
@@ -26,9 +27,10 @@ function getInitials(email: string): string {
 
 export type TopHeaderProps = {
   userEmail: string | null;
+  workspaceName: string;
 };
 
-export function TopHeader({ userEmail }: TopHeaderProps) {
+export function TopHeader({ userEmail, workspaceName }: TopHeaderProps) {
   return (
     <header className={styles.root}>
       <div className={styles.leading}>
@@ -37,6 +39,10 @@ export function TopHeader({ userEmail }: TopHeaderProps) {
         <Link className={styles.wordmark} href="/workspace">
           Lushra
         </Link>
+
+        <Text className={styles.workspaceName} color="secondary">
+          {workspaceName}
+        </Text>
       </div>
 
       <div className={styles.trailing}>

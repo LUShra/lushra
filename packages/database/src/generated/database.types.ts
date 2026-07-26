@@ -140,6 +140,22 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      ensure_personal_workspace: {
+        Args: never
+        Returns: {
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "workspaces"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       is_workspace_member: {
         Args: { target_workspace_id: string }
         Returns: boolean
