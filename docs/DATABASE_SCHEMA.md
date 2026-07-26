@@ -63,6 +63,35 @@ Product Definition §30 Project entity, scoped to first-release capability (crea
 
 Created, renamed, archived, and restored directly by application code (Milestone 8, `apps/web/features/projects/`) via ordinary `INSERT`/`UPDATE` through the existing Milestone 6 RLS policies -- no new migration or database function was required. `description` is viewable and editable from the Project Home page (Milestone 9). `purpose`, `desired_outcome`, `key_constraints`, and `target_audience` (Milestone 10) are the remaining Product Definition §20 item 5 "Project foundation" fields short of "source materials," which is deliberately not a column here -- see §6. See §6 for both.
 
+### 2.4 `public.sessions`
+
+Product Definition §30 Session entity (Milestone 11): a focused period of work within a project. No AI orchestration exists yet -- see §6.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | `uuid` | Primary key, `default gen_random_uuid()` |
+| `project_id` | `uuid` | `not null references projects(id) on delete cascade` |
+| `workspace_id` | `uuid` | `not null references workspaces(id) on delete cascade`; denormalized from the owning project, same pattern as `projects.workspace_id` relative to `workspaces` |
+| `owner_id` | `uuid` | `not null references auth.users(id) on delete cascade` |
+| `created_at` | `timestamptz` | `not null default now()` |
+
+No `name`/`status` column: a session is identified by its project and creation time, not a user-chosen name, matching the minimal "quick creation" ethos already established for projects. No `UPDATE`/`DELETE` policy -- a session has no mutable fields yet, and deletion is not a requested capability.
+
+### 2.5 `public.messages`
+
+Product Definition §30 Message entity (Milestone 11): a single exchange of instruction or response within a session, retained as session history. Every row is human-authored this milestone -- no AI orchestration exists yet (Roadmap §11).
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | `uuid` | Primary key, `default gen_random_uuid()` |
+| `session_id` | `uuid` | `not null references sessions(id) on delete cascade` |
+| `workspace_id` | `uuid` | `not null references workspaces(id) on delete cascade`; denormalized from the owning session |
+| `sender_id` | `uuid` | `not null references auth.users(id) on delete cascade` |
+| `content` | `text` | `not null`, non-blank, ≤10,000 characters |
+| `created_at` | `timestamptz` | `not null default now()` |
+
+No `role` column (user/assistant) yet: every message this milestone is human-authored, so a column with only one real value would be premature. A small additive migration once AI-authored responses genuinely exist. No `UPDATE`/`DELETE` policy -- messages are immutable durable history, distinct from editable artifacts.
+
 ---
 
 ## 3. Functions
@@ -81,13 +110,15 @@ All `SECURITY DEFINER` functions: `search_path` pinned, every reference schema-q
 
 ## 4. Row-Level Security
 
-RLS is enabled on all three tables. `anon` has zero policies anywhere, so unauthenticated requests receive zero rows or a permission-denied error, never real data.
+RLS is enabled on all five tables. `anon` has zero policies anywhere, so unauthenticated requests receive zero rows or a permission-denied error, never real data.
 
 | Table | SELECT | INSERT | UPDATE | DELETE |
 |---|---|---|---|---|
 | `workspaces` | member (`is_workspace_member(id)`) | none for `authenticated` -- only `create_workspace()`/`ensure_personal_workspace()` (bypass RLS as `SECURITY DEFINER`) | owner only (`auth.uid() = owner_id`) | none |
 | `workspace_memberships` | member (`is_workspace_member(workspace_id)`) | none | none | none |
 | `projects` | member (`is_workspace_member(workspace_id)`) | member + `owner_id = auth.uid()` | member | none (archive via UPDATE) |
+| `sessions` | member (`is_workspace_member(workspace_id)`) | member + `owner_id = auth.uid()` | none | none |
+| `messages` | member (`is_workspace_member(workspace_id)`) | member + `sender_id = auth.uid()` | none | none |
 
 Ownership columns (`workspaces.owner_id`, `projects.owner_id`, `projects.workspace_id`) cannot be changed by an ordinary `UPDATE` even by a workspace member -- `prevent_ownership_reassignment()` rejects the change regardless of what any RLS policy would otherwise permit, closing a gap a `WITH CHECK owner_id = auth.uid()` policy alone would miss (a user owning two workspaces could otherwise move a project between them).
 
@@ -125,6 +156,8 @@ Milestone 8 implements create/rename/archive/restore entirely in application cod
 
 **Milestone 10 (Project Context Fields)** adds `purpose`, `desired_outcome`, `key_constraints`, and `target_audience` (§2.3) via one additive migration (`20260726110000_add_project_context_fields.sql`) and a new "Context" section on Project Home (`apps/web/features/projects/project-context-form.tsx`, `updateProjectContextAction`). All four columns are nullable with their own max-length CHECK, mirroring `description`'s existing pattern; `updateProjectContextAction` validates the same lengths client- and server-side before ever reaching the database, and uses the same `.select().single()` honest-failure pattern as every other project mutation. No RLS policy changed -- `projects_update_member` already covers `UPDATE` on any column on the row, including these new ones, and `prevent_ownership_reassignment()` has nothing to do with non-ownership fields. "Source materials" is still deliberately not a column: it is the Source entity (Product Definition §30), with its own attachment/upload lifecycle belonging to a distinct, later architectural layer (Asset Management) -- a text column could not honestly represent that capability. No "project context summary" column was added either; the application satisfies Experience Architecture §19's visibility requirement by rendering the existing fields together on Project Home, not by storing a derived summary as its own row.
 
+**Milestone 11 (Creation Sessions)** adds `public.sessions` and `public.messages` (§2.4, §2.5) via one additive migration (`20260726120000_create_sessions_and_messages.sql`), and application code in `apps/web/features/sessions/`. Project Home's Sessions section (`apps/web/app/workspace/projects/[id]/page.tsx`) lists a project's sessions (`listSessions`) and offers `StartSessionForm` (`createSessionAction`) to begin one; a new `/workspace/projects/[id]/sessions/[sessionId]` page (`getSession`, `listMessages`) shows the message history and `SendMessageForm` (`sendMessageAction`) to add to it. Both new tables reuse the existing `is_workspace_member(workspace_id)` RLS helper unchanged -- no new function was required. `getSession` is scoped by `id`, `project_id`, and `workspace_id` together, the same defense-in-depth pattern as `getProject`; both "doesn't exist" and "exists but isn't yours/isn't this project's" render the same generic `notFound()`. Messages are append-only from the application's perspective: `sendMessageAction` only ever inserts, matching the tables having no `UPDATE`/`DELETE` policy at all. This milestone deliberately ships no AI wiring -- every message is human-authored, sent by whichever user submits the form as `sender_id = auth.uid()`; a `role` column and real AI-authored responses are a distinct, later roadmap phase (§8).
+
 ---
 
 ## 7. Type generation
@@ -135,7 +168,7 @@ Milestone 8 implements create/rename/archive/restore entirely in application cod
 
 ## 8. Deferred
 
-Not yet implemented, each belonging to a later, distinct roadmap phase: multiple workspaces per user, workspace switching, workspace invitations or additional membership roles, Organisation as a tier above Workspace, guided project creation/duplication, source materials as an attachable Source entity and Project Context as an independent table, the `draft`/`paused`/`completed`/`deleted` project states, the fuller Workspace Overview experience (recent work, pending reviews, next actions beyond a project count), Session/Message/Artifact/Artifact Version, Activity Event, AI Capability/Provider, Usage Record, Source/Asset, Decision/Audit Event, Notifications. `create_workspace(text)`'s eventual removal (currently unused, left in place) is also unresolved.
+Not yet implemented, each belonging to a later, distinct roadmap phase: multiple workspaces per user, workspace switching, workspace invitations or additional membership roles, Organisation as a tier above Workspace, guided project creation/duplication, source materials as an attachable Source entity and Project Context as an independent table, the `draft`/`paused`/`completed`/`deleted` project states, the fuller Workspace Overview experience (recent work, pending reviews, next actions beyond a project count), AI Orchestration and a `messages.role` column for AI-authored responses, session naming/status, Artifact/Artifact Version, Activity Event, AI Capability/Provider, Usage Record, Source/Asset, Decision/Audit Event, Notifications. `create_workspace(text)`'s eventual removal (currently unused, left in place) is also unresolved.
 
 ---
 
@@ -151,3 +184,4 @@ This document is updated whenever a migration changes the live schema it describ
 | 1.1 | 2026-07-26 | Milestone 8: added §6 documenting application-level project create/rename/archive/restore against the unchanged Milestone 6 schema; updated §8 Deferred accordingly. |
 | 1.2 | 2026-07-26 | Milestone 9: documented the Project Home page and description editing in §6, both against the unchanged schema; updated §8 Deferred accordingly. |
 | 1.3 | 2026-07-26 | Milestone 10: added `purpose`, `desired_outcome`, `key_constraints`, `target_audience` to §2.3 via migration `20260726110000_add_project_context_fields.sql`; documented the new Project Home Context section in §6; updated §8 Deferred accordingly. |
+| 1.4 | 2026-07-26 | Milestone 11: added `public.sessions` and `public.messages` (§2.4, §2.5) via migration `20260726120000_create_sessions_and_messages.sql`; added their RLS rows to §4; documented the new Sessions section on Project Home and the session detail page in §6; updated §8 Deferred accordingly. |
