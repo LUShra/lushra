@@ -1,0 +1,140 @@
+"use client";
+
+import { useActionState, useState } from "react";
+
+import {
+  Button,
+  Card,
+  Field,
+  FormMessage,
+  Heading,
+  Input,
+  Inline,
+  Label,
+  Stack,
+  Text
+} from "@lushra/ui";
+
+import type { Project } from "./list-projects";
+import {
+  archiveProjectAction,
+  renameProjectAction,
+  restoreProjectAction,
+  type ProjectActionState
+} from "./project-actions";
+
+const initialState: ProjectActionState = { status: "idle" };
+
+export type ProjectListItemProps = {
+  project: Project;
+};
+
+export function ProjectListItem({ project }: ProjectListItemProps) {
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameState, renameFormAction, isRenamePending] = useActionState(
+    renameProjectAction,
+    initialState
+  );
+  const [archiveState, archiveFormAction, isArchivePending] = useActionState(
+    archiveProjectAction,
+    initialState
+  );
+  const [restoreState, restoreFormAction, isRestorePending] = useActionState(
+    restoreProjectAction,
+    initialState
+  );
+
+  const isArchived = project.status === "archived";
+
+  return (
+    <Card variant="raised">
+      <Stack gap={4}>
+        {isRenaming ? (
+          <form action={renameFormAction}>
+            <Stack gap={3}>
+              <input name="projectId" type="hidden" value={project.id} />
+
+              <Field invalid={Boolean(renameState.fieldErrors?.name)}>
+                <Label>Project name</Label>
+                <Input
+                  defaultValue={project.name}
+                  maxLength={160}
+                  name="name"
+                  required
+                  type="text"
+                />
+                {renameState.fieldErrors?.name ? (
+                  <FormMessage tone="error">{renameState.fieldErrors.name}</FormMessage>
+                ) : null}
+              </Field>
+
+              {renameState.status === "error" && renameState.message ? (
+                <FormMessage tone="error">{renameState.message}</FormMessage>
+              ) : null}
+
+              <Inline gap={3}>
+                <Button loading={isRenamePending} size="small" type="submit">
+                  Save
+                </Button>
+                <Button
+                  onClick={() => setIsRenaming(false)}
+                  size="small"
+                  type="button"
+                  variant="secondary"
+                >
+                  Cancel
+                </Button>
+              </Inline>
+            </Stack>
+          </form>
+        ) : (
+          <Inline align="center" gap={4} justify="between">
+            <Stack gap={1}>
+              <Heading level={2} visualRole="heading-4">
+                {project.name}
+              </Heading>
+              <Text color="secondary">{isArchived ? "Archived" : "Active"}</Text>
+            </Stack>
+
+            <Button
+              onClick={() => setIsRenaming(true)}
+              size="small"
+              type="button"
+              variant="secondary"
+            >
+              Rename
+            </Button>
+          </Inline>
+        )}
+
+        {!isRenaming ? (
+          <Inline gap={3}>
+            {isArchived ? (
+              <form action={restoreFormAction}>
+                <input name="projectId" type="hidden" value={project.id} />
+                <Button loading={isRestorePending} size="small" type="submit" variant="secondary">
+                  Restore
+                </Button>
+              </form>
+            ) : (
+              <form action={archiveFormAction}>
+                <input name="projectId" type="hidden" value={project.id} />
+                <Button loading={isArchivePending} size="small" type="submit" variant="secondary">
+                  Archive
+                </Button>
+              </form>
+            )}
+          </Inline>
+        ) : null}
+
+        {archiveState.status === "error" && archiveState.message ? (
+          <FormMessage tone="error">{archiveState.message}</FormMessage>
+        ) : null}
+
+        {restoreState.status === "error" && restoreState.message ? (
+          <FormMessage tone="error">{restoreState.message}</FormMessage>
+        ) : null}
+      </Stack>
+    </Card>
+  );
+}

@@ -57,7 +57,7 @@ Product Definition §30 Project entity, scoped to first-release capability (crea
 | `archived_at` | `timestamptz` | nullable; consistent with `status` via CHECK |
 | `created_at` / `updated_at` | `timestamptz` | `not null default now()`; `updated_at` trigger-maintained |
 
-Not yet created by any application code (Project creation is Milestone 8+ scope).
+Created, renamed, archived, and restored directly by application code (Milestone 8, `apps/web/features/projects/`) via ordinary `INSERT`/`UPDATE` through the existing Milestone 6 RLS policies -- no new migration or database function was required. See §8.
 
 ---
 
@@ -106,15 +106,28 @@ Ownership columns (`workspaces.owner_id`, `projects.owner_id`, `projects.workspa
 
 ---
 
-## 6. Type generation
+## 6. Project lifecycle (application-level)
+
+Milestone 8 implements create/rename/archive/restore entirely in application code (`apps/web/features/projects/`), against the Milestone 6 schema and RLS policies unchanged -- no migration was required.
+
+- **Create:** `createProjectAction` inserts `{workspace_id, owner_id: auth.uid(), name}` via `projects_insert_member_owner`. A caller-supplied `workspaceId` that the user does not belong to is rejected by RLS's `is_workspace_member(workspace_id)` check regardless of what the client submits -- the form field is a convenience, not the authorization boundary.
+- **Rename:** updates `name` via `projects_update_member`.
+- **Archive / Restore:** update `status` and `archived_at` together (`'archived'` + a timestamp, or `'active'` + `null`) via the same policy; the `projects_status_archived_at_consistency` CHECK is the authoritative guarantee that the two columns never disagree, independent of what the application sends.
+- **Ownership stays immutable:** `owner_id` and `workspace_id` are never included in any update payload, and `prevent_ownership_reassignment()` would reject them if they were.
+- **Honest failure on a stale/foreign target:** every `UPDATE` chains `.select().single()` so that an `id` RLS silently filters out (project deleted, or belonging to another workspace) surfaces as a genuine error rather than a misleading "success" redirect with zero rows actually changed.
+- **Scope:** quick creation (name only) and the `active`/`archived` states established in Milestone 6 -- guided creation, duplication, project home, context editing, and the `draft`/`paused`/`completed`/`deleted` states from Experience Architecture §17 remain deferred (§8).
+
+---
+
+## 7. Type generation
 
 `packages/database/src/generated/database.types.ts` is generated from the live schema via `pnpm generate-types` (see `packages/database/README.md`) and re-exported from `packages/database/src/index.ts`. Application code (`apps/web`) consumes it through the `Database` generic parameter on both `createServerClient<Database>()` and `createBrowserClient<Database>()`, and via the `Tables<'...'>` helper type -- no hand-written row types exist anywhere in `apps/web`.
 
 ---
 
-## 7. Deferred
+## 8. Deferred
 
-Not yet implemented, each belonging to a later, distinct roadmap phase: multiple workspaces per user, workspace switching, workspace invitations or additional membership roles, Organisation as a tier above Workspace, project creation/rename/archive/restore, Project Context as an independent table, Session/Message/Artifact/Artifact Version, Activity Event, AI Capability/Provider, Usage Record, Source/Asset, Decision/Audit Event, Notifications. `create_workspace(text)`'s eventual removal (currently unused, left in place) is also unresolved and not part of this milestone's scope.
+Not yet implemented, each belonging to a later, distinct roadmap phase: multiple workspaces per user, workspace switching, workspace invitations or additional membership roles, Organisation as a tier above Workspace, guided project creation/duplication, project home, Project Context as an independent table and its editing UI, the `draft`/`paused`/`completed`/`deleted` project states, Session/Message/Artifact/Artifact Version, Activity Event, AI Capability/Provider, Usage Record, Source/Asset, Decision/Audit Event, Notifications. `create_workspace(text)`'s eventual removal (currently unused, left in place) is also unresolved.
 
 ---
 
@@ -127,3 +140,4 @@ This document is updated whenever a migration changes the live schema it describ
 | Version | Date | Change |
 | --- | --- | --- |
 | 1.0 | 2026-07-26 | Initial document, covering the Milestone 6 schema (workspaces, workspace_memberships, projects; create_workspace, is_workspace_member) and the Milestone 7 addition (ensure_personal_workspace, workspaces.owner_id uniqueness). |
+| 1.1 | 2026-07-26 | Milestone 8: added §6 documenting application-level project create/rename/archive/restore against the unchanged Milestone 6 schema; updated §8 Deferred accordingly. |

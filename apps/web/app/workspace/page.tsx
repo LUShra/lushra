@@ -1,11 +1,17 @@
 import { Card, Heading, Stack, Text } from "@lushra/ui";
+import Link from "next/link";
 
 import { PageFrame } from "@/components/layout/page-frame";
+import { listProjects } from "@/features/projects/list-projects";
 import { getOrCreatePersonalWorkspace } from "@/features/workspace/get-or-create-personal-workspace";
 
 export default async function WorkspaceOverviewPage() {
-  const result = await getOrCreatePersonalWorkspace();
-  const eyebrow = result.status === "ready" ? result.workspace.name : "Workspace";
+  const workspaceResult = await getOrCreatePersonalWorkspace();
+  const eyebrow = workspaceResult.status === "ready" ? workspaceResult.workspace.name : "Workspace";
+
+  const projectsResult =
+    workspaceResult.status === "ready" ? await listProjects(workspaceResult.workspace.id) : null;
+  const projectCount = projectsResult?.status === "ready" ? projectsResult.projects.length : 0;
 
   return (
     <PageFrame
@@ -15,13 +21,27 @@ export default async function WorkspaceOverviewPage() {
     >
       <Card variant="inset">
         <Stack gap={2}>
-          <Heading level={2} visualRole="heading-4">
-            Nothing to show yet
-          </Heading>
+          {projectCount > 0 ? (
+            <>
+              <Heading level={2} visualRole="heading-4">
+                {projectCount === 1 ? "1 project" : `${projectCount} projects`}
+              </Heading>
 
-          <Text color="secondary">
-            Projects, activity, and reviews will appear here once your first project exists.
-          </Text>
+              <Text color="secondary">
+                <Link href="/workspace/projects">View your projects</Link>
+              </Text>
+            </>
+          ) : (
+            <>
+              <Heading level={2} visualRole="heading-4">
+                Nothing to show yet
+              </Heading>
+
+              <Text color="secondary">
+                Projects, activity, and reviews will appear here once your first project exists.
+              </Text>
+            </>
+          )}
         </Stack>
       </Card>
     </PageFrame>
