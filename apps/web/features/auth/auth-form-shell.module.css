@@ -1,0 +1,14 @@
+.page {
+  display: grid;
+  min-height: 100vh;
+  align-content: center;
+  padding-block: var(--lushra-space-8);
+}
+
+.card {
+  width: 100%;
+}
+
+.footer {
+  color: var(--color-text-secondary);
+}
