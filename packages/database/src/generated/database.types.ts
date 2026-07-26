@@ -24,10 +24,14 @@ export type Database = {
           archived_at: string | null
           created_at: string
           description: string | null
+          desired_outcome: string | null
           id: string
+          key_constraints: string | null
           name: string
           owner_id: string
+          purpose: string | null
           status: string
+          target_audience: string | null
           updated_at: string
           workspace_id: string
         }
@@ -35,10 +39,14 @@ export type Database = {
           archived_at?: string | null
           created_at?: string
           description?: string | null
+          desired_outcome?: string | null
           id?: string
+          key_constraints?: string | null
           name: string
           owner_id: string
+          purpose?: string | null
           status?: string
+          target_audience?: string | null
           updated_at?: string
           workspace_id: string
         }
@@ -46,10 +54,14 @@ export type Database = {
           archived_at?: string | null
           created_at?: string
           description?: string | null
+          desired_outcome?: string | null
           id?: string
+          key_constraints?: string | null
           name?: string
           owner_id?: string
+          purpose?: string | null
           status?: string
+          target_audience?: string | null
           updated_at?: string
           workspace_id?: string
         }
