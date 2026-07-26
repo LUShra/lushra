@@ -16,7 +16,7 @@ export function SignUpForm() {
     return (
       <Stack gap={4}>
         <FormMessage tone="success">{state.message}</FormMessage>
-        <Text role="body-small">
+        <Text>
           <Link href="/auth/sign-in">Return to sign in</Link>
         </Text>
       </Stack>
@@ -72,7 +72,7 @@ export function SignUpForm() {
           Create account
         </Button>
 
-        <Text role="body-small">
+        <Text>
           Already registered? <Link href="/auth/sign-in">Sign in</Link>
         </Text>
       </Stack>

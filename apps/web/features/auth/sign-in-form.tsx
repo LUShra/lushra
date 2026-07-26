@@ -47,10 +47,10 @@ export function SignInForm({ next }: SignInFormProps) {
         </Button>
 
         <Stack gap={2}>
-          <Text role="body-small">
+          <Text>
             <Link href="/auth/forgot-password">Forgot your password?</Link>
           </Text>
-          <Text role="body-small">
+          <Text>
             New to Lushra? <Link href="/auth/sign-up">Create an account</Link>
           </Text>
         </Stack>

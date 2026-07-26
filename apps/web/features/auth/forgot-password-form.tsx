@@ -19,7 +19,7 @@ export function ForgotPasswordForm() {
     return (
       <Stack gap={4}>
         <FormMessage tone="success">{state.message}</FormMessage>
-        <Text role="body-small">
+        <Text>
           <Link href="/auth/sign-in">Return to sign in</Link>
         </Text>
       </Stack>
@@ -43,7 +43,7 @@ export function ForgotPasswordForm() {
           Send recovery instructions
         </Button>
 
-        <Text role="body-small">
+        <Text>
           <Link href="/auth/sign-in">Return to sign in</Link>
         </Text>
       </Stack>
