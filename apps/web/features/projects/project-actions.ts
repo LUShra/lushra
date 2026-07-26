@@ -10,8 +10,23 @@ export type ProjectActionState = {
   fieldErrors?: {
     name?: string;
     description?: string;
+    purpose?: string;
+    desiredOutcome?: string;
+    keyConstraints?: string;
+    targetAudience?: string;
   };
 };
+
+/** Trims a field to null-if-blank, then rejects it if it exceeds maxLength. */
+function normalizeContextField(
+  value: FormDataEntryValue | null,
+  maxLength: number
+): { value: string | null; tooLong: boolean } {
+  const trimmed = String(value ?? "").trim();
+  const normalized = trimmed.length > 0 ? trimmed : null;
+
+  return { value: normalized, tooLong: Boolean(normalized && normalized.length > maxLength) };
+}
 
 /**
  * Every action re-establishes the current user server-side rather than
@@ -123,6 +138,64 @@ export async function updateProjectDescriptionAction(
 
   if (error) {
     return { status: "error", message: "That project's description could not be saved." };
+  }
+
+  redirect(`/workspace/projects/${projectId}`);
+}
+
+export async function updateProjectContextAction(
+  _prevState: ProjectActionState,
+  formData: FormData
+): Promise<ProjectActionState> {
+  const projectId = String(formData.get("projectId") ?? "");
+
+  if (!projectId) {
+    return { status: "error", message: "That project could not be found." };
+  }
+
+  const purpose = normalizeContextField(formData.get("purpose"), 500);
+  const desiredOutcome = normalizeContextField(formData.get("desiredOutcome"), 500);
+  const keyConstraints = normalizeContextField(formData.get("keyConstraints"), 1000);
+  const targetAudience = normalizeContextField(formData.get("targetAudience"), 500);
+
+  const fieldErrors: NonNullable<ProjectActionState["fieldErrors"]> = {};
+
+  if (purpose.tooLong) {
+    fieldErrors.purpose = "Purpose must be 500 characters or fewer.";
+  }
+
+  if (desiredOutcome.tooLong) {
+    fieldErrors.desiredOutcome = "Desired outcome must be 500 characters or fewer.";
+  }
+
+  if (keyConstraints.tooLong) {
+    fieldErrors.keyConstraints = "Key constraints must be 1000 characters or fewer.";
+  }
+
+  if (targetAudience.tooLong) {
+    fieldErrors.targetAudience = "Target audience must be 500 characters or fewer.";
+  }
+
+  if (Object.keys(fieldErrors).length > 0) {
+    return { status: "error", fieldErrors };
+  }
+
+  const { supabase } = await requireUser();
+
+  const { error } = await supabase
+    .from("projects")
+    .update({
+      purpose: purpose.value,
+      desired_outcome: desiredOutcome.value,
+      key_constraints: keyConstraints.value,
+      target_audience: targetAudience.value
+    })
+    .eq("id", projectId)
+    .select()
+    .single();
+
+  if (error) {
+    return { status: "error", message: "That project's context could not be saved." };
   }
 
   redirect(`/workspace/projects/${projectId}`);

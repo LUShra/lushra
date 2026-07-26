@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import { PageFrame } from "@/components/layout/page-frame";
 import { getProject } from "@/features/projects/list-projects";
+import { ProjectContextForm } from "@/features/projects/project-context-form";
 import { ProjectDescriptionForm } from "@/features/projects/project-description-form";
 import { ProjectHomeActions } from "@/features/projects/project-home-actions";
 import { getOrCreatePersonalWorkspace } from "@/features/workspace/get-or-create-personal-workspace";
@@ -49,6 +50,15 @@ export default async function ProjectHomePage({ params }: ProjectHomePageProps) 
               Description
             </Heading>
             <ProjectDescriptionForm project={project} />
+          </Stack>
+        </Card>
+
+        <Card variant="inset">
+          <Stack gap={4}>
+            <Heading level={2} visualRole="heading-4">
+              Context
+            </Heading>
+            <ProjectContextForm project={project} />
           </Stack>
         </Card>
 

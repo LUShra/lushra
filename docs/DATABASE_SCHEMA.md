@@ -53,11 +53,15 @@ Product Definition §30 Project entity, scoped to first-release capability (crea
 | `owner_id` | `uuid` | `not null references auth.users(id) on delete cascade` |
 | `name` | `text` | `not null`, non-blank, ≤160 characters |
 | `description` | `text` | nullable, ≤2000 characters |
+| `purpose` | `text` | nullable, ≤500 characters (Milestone 10) |
+| `desired_outcome` | `text` | nullable, ≤500 characters (Milestone 10) |
+| `key_constraints` | `text` | nullable, free text, ≤1000 characters (Milestone 10) |
+| `target_audience` | `text` | nullable, ≤500 characters (Milestone 10) |
 | `status` | `text` | `not null default 'active' check (status in ('active','archived'))` |
 | `archived_at` | `timestamptz` | nullable; consistent with `status` via CHECK |
 | `created_at` / `updated_at` | `timestamptz` | `not null default now()`; `updated_at` trigger-maintained |
 
-Created, renamed, archived, and restored directly by application code (Milestone 8, `apps/web/features/projects/`) via ordinary `INSERT`/`UPDATE` through the existing Milestone 6 RLS policies -- no new migration or database function was required. `description` is viewable and editable from the Project Home page (Milestone 9). See §6.
+Created, renamed, archived, and restored directly by application code (Milestone 8, `apps/web/features/projects/`) via ordinary `INSERT`/`UPDATE` through the existing Milestone 6 RLS policies -- no new migration or database function was required. `description` is viewable and editable from the Project Home page (Milestone 9). `purpose`, `desired_outcome`, `key_constraints`, and `target_audience` (Milestone 10) are the remaining Product Definition §20 item 5 "Project foundation" fields short of "source materials," which is deliberately not a column here -- see §6. See §6 for both.
 
 ---
 
@@ -119,6 +123,8 @@ Milestone 8 implements create/rename/archive/restore entirely in application cod
 
 **Milestone 9 (Project Home)** adds the "open a project" capability from Product Definition §20 item 4: a dedicated `/workspace/projects/[id]` page (`apps/web/app/workspace/projects/[id]/page.tsx`). `getProject(projectId, workspaceId)` fetches a single row scoped by both `id` and `workspace_id` -- RLS already prevents a cross-workspace read, but the explicit filter keeps the query's intent legible without relying solely on RLS to narrow scope by omission. If the row doesn't exist or isn't visible to the caller, the page renders a generic `notFound()` in both cases -- deliberately not distinguishing "doesn't exist" from "exists but isn't yours," to avoid leaking which projects exist to a user who doesn't own them. `updateProjectDescriptionAction` is the one new mutation, editing the existing `description` column (using it as the "brief" field from Product Definition §20 item 5) via the same `projects_update_member` policy and the same `.select().single()` honest-failure pattern as rename/archive/restore. Archive/restore are also exposed here, reusing the exact same Milestone 8 server actions -- not a duplicated implementation, a second presentation of the same one. The page is honest about what it cannot show yet: a "Sessions, artifacts, and review" section states plainly that this content isn't available, rather than faking it, since no Session/Artifact/Review entities exist yet. The fuller Project Context fields (objective, desired outcome, key constraints, target audience, source materials) from Product Definition §20 item 5 remain deferred (§8) -- they would require new columns, which this milestone did not add.
 
+**Milestone 10 (Project Context Fields)** adds `purpose`, `desired_outcome`, `key_constraints`, and `target_audience` (§2.3) via one additive migration (`20260726110000_add_project_context_fields.sql`) and a new "Context" section on Project Home (`apps/web/features/projects/project-context-form.tsx`, `updateProjectContextAction`). All four columns are nullable with their own max-length CHECK, mirroring `description`'s existing pattern; `updateProjectContextAction` validates the same lengths client- and server-side before ever reaching the database, and uses the same `.select().single()` honest-failure pattern as every other project mutation. No RLS policy changed -- `projects_update_member` already covers `UPDATE` on any column on the row, including these new ones, and `prevent_ownership_reassignment()` has nothing to do with non-ownership fields. "Source materials" is still deliberately not a column: it is the Source entity (Product Definition §30), with its own attachment/upload lifecycle belonging to a distinct, later architectural layer (Asset Management) -- a text column could not honestly represent that capability. No "project context summary" column was added either; the application satisfies Experience Architecture §19's visibility requirement by rendering the existing fields together on Project Home, not by storing a derived summary as its own row.
+
 ---
 
 ## 7. Type generation
@@ -129,7 +135,7 @@ Milestone 8 implements create/rename/archive/restore entirely in application cod
 
 ## 8. Deferred
 
-Not yet implemented, each belonging to a later, distinct roadmap phase: multiple workspaces per user, workspace switching, workspace invitations or additional membership roles, Organisation as a tier above Workspace, guided project creation/duplication, the fuller Project Context fields (objective, desired outcome, key constraints, target audience, source materials) and Project Context as an independent table, the `draft`/`paused`/`completed`/`deleted` project states, the fuller Workspace Overview experience (recent work, pending reviews, next actions beyond a project count), Session/Message/Artifact/Artifact Version, Activity Event, AI Capability/Provider, Usage Record, Source/Asset, Decision/Audit Event, Notifications. `create_workspace(text)`'s eventual removal (currently unused, left in place) is also unresolved.
+Not yet implemented, each belonging to a later, distinct roadmap phase: multiple workspaces per user, workspace switching, workspace invitations or additional membership roles, Organisation as a tier above Workspace, guided project creation/duplication, source materials as an attachable Source entity and Project Context as an independent table, the `draft`/`paused`/`completed`/`deleted` project states, the fuller Workspace Overview experience (recent work, pending reviews, next actions beyond a project count), Session/Message/Artifact/Artifact Version, Activity Event, AI Capability/Provider, Usage Record, Source/Asset, Decision/Audit Event, Notifications. `create_workspace(text)`'s eventual removal (currently unused, left in place) is also unresolved.
 
 ---
 
@@ -144,3 +150,4 @@ This document is updated whenever a migration changes the live schema it describ
 | 1.0 | 2026-07-26 | Initial document, covering the Milestone 6 schema (workspaces, workspace_memberships, projects; create_workspace, is_workspace_member) and the Milestone 7 addition (ensure_personal_workspace, workspaces.owner_id uniqueness). |
 | 1.1 | 2026-07-26 | Milestone 8: added §6 documenting application-level project create/rename/archive/restore against the unchanged Milestone 6 schema; updated §8 Deferred accordingly. |
 | 1.2 | 2026-07-26 | Milestone 9: documented the Project Home page and description editing in §6, both against the unchanged schema; updated §8 Deferred accordingly. |
+| 1.3 | 2026-07-26 | Milestone 10: added `purpose`, `desired_outcome`, `key_constraints`, `target_audience` to §2.3 via migration `20260726110000_add_project_context_fields.sql`; documented the new Project Home Context section in §6; updated §8 Deferred accordingly. |
