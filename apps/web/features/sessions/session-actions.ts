@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
+import { orchestrateResponse } from "@/lib/ai/orchestrator";
 import { createClient } from "@/lib/supabase/server";
 
 export type SessionActionState = {
@@ -11,6 +12,8 @@ export type SessionActionState = {
   fieldErrors?: {
     content?: string;
   };
+  /** Non-fatal: the user's own message still sent successfully. */
+  aiWarning?: string;
 };
 
 /**
@@ -92,6 +95,7 @@ export async function sendMessageAction(
     session_id: sessionId,
     workspace_id: workspaceId,
     sender_id: user.id,
+    role: "user",
     content
   });
 
@@ -99,7 +103,40 @@ export async function sendMessageAction(
     return { status: "error", message: "That message could not be sent." };
   }
 
+  const aiWarning = await respondAsAssistant(supabase, sessionId, content);
+
   revalidatePath(`/workspace/projects/${projectId}/sessions/${sessionId}`);
 
-  return { status: "idle" };
+  return { status: "idle", aiWarning };
+}
+
+/**
+ * Best-effort: the user's own message already sent successfully above
+ * regardless of what happens here. Any failure -- provider error, missing
+ * key, or the insert_assistant_message RPC itself failing -- is reported
+ * as a non-fatal warning, never surfaced as raw provider or Postgres text.
+ */
+async function respondAsAssistant(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  sessionId: string,
+  instruction: string
+): Promise<string | undefined> {
+  const result = await orchestrateResponse(instruction);
+
+  if (result.status === "error") {
+    console.error("orchestrateResponse failed:", result.message);
+    return "The AI assistant couldn't respond. Try again.";
+  }
+
+  const { error } = await supabase.rpc("insert_assistant_message", {
+    target_session_id: sessionId,
+    message_content: result.content
+  });
+
+  if (error) {
+    console.error("insert_assistant_message failed:", error.message);
+    return "The AI assistant couldn't respond. Try again.";
+  }
+
+  return undefined;
 }

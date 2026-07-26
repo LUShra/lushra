@@ -78,12 +78,13 @@ export default async function SessionPage({ params }: SessionPageProps) {
                     dateStyle: "medium",
                     timeStyle: "short"
                   });
+                  const senderLabel = message.role === "assistant" ? "AI assistant" : "You";
 
                   return (
                     <Stack gap={1} key={message.id}>
                       {/* eslint-disable-next-line jsx-a11y/aria-role -- Text's `role` is a typography role, not an ARIA role. */}
                       <Text color="secondary" role="label">
-                        {sentAt}
+                        {senderLabel} · {sentAt}
                       </Text>
                       <Text className={styles.messageContent}>{message.content}</Text>
                     </Stack>

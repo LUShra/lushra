@@ -79,18 +79,19 @@ No `name`/`status` column: a session is identified by its project and creation t
 
 ### 2.5 `public.messages`
 
-Product Definition §30 Message entity (Milestone 11): a single exchange of instruction or response within a session, retained as session history. Every row is human-authored this milestone -- no AI orchestration exists yet (Roadmap §11).
+Product Definition §30 Message entity (Milestone 11, extended Milestone 12): a single exchange of instruction or response within a session, retained as session history.
 
 | Column | Type | Notes |
 |---|---|---|
 | `id` | `uuid` | Primary key, `default gen_random_uuid()` |
 | `session_id` | `uuid` | `not null references sessions(id) on delete cascade` |
 | `workspace_id` | `uuid` | `not null references workspaces(id) on delete cascade`; denormalized from the owning session |
-| `sender_id` | `uuid` | `not null references auth.users(id) on delete cascade` |
+| `sender_id` | `uuid` | nullable (Milestone 12) `references auth.users(id) on delete cascade`; not null for `role='user'`, null for `role='assistant'` |
+| `role` | `text` | `not null default 'user' check (role in ('user','assistant'))` (Milestone 12) |
 | `content` | `text` | `not null`, non-blank, ≤10,000 characters |
 | `created_at` | `timestamptz` | `not null default now()` |
 
-No `role` column (user/assistant) yet: every message this milestone is human-authored, so a column with only one real value would be premature. A small additive migration once AI-authored responses genuinely exist. No `UPDATE`/`DELETE` policy -- messages are immutable durable history, distinct from editable artifacts.
+`messages_role_sender_consistency` CHECK (Milestone 12) is the authoritative guarantee that a `'user'` row always has a real `sender_id` and an `'assistant'` row never does, independent of what any calling code sends. No `UPDATE`/`DELETE` policy -- messages are immutable durable history, distinct from editable artifacts.
 
 ---
 
@@ -103,6 +104,7 @@ No `role` column (user/assistant) yet: every message this milestone is human-aut
 | `ensure_personal_workspace() returns workspaces` | `SECURITY DEFINER`, `search_path=public` | `authenticated` | The idempotent personal-workspace provisioning entry point. See §5. |
 | `set_updated_at() returns trigger` | invoker, `search_path=public` | (trigger only) | Sets `NEW.updated_at = now()` on `workspaces` and `projects`. |
 | `prevent_ownership_reassignment() returns trigger` | invoker, `search_path=public` | (trigger only) | Rejects any change to `owner_id` (and, on `projects`, `workspace_id`) via `UPDATE`. |
+| `insert_assistant_message(target_session_id uuid, message_content text) returns messages` | `SECURITY DEFINER`, `search_path=public` | `authenticated` | Milestone 12: the only path that can create a `role='assistant'` message. Resolves `workspace_id` from the session itself (not a caller-supplied value) and re-checks `is_workspace_member()`; accepts no caller-supplied `role` or `sender_id`, so no parameter can escalate it into creating a human-attributed row or a row outside the caller's own workspace. See §6. |
 
 All `SECURITY DEFINER` functions: `search_path` pinned, every reference schema-qualified, `EXECUTE` revoked from `PUBLIC` and `anon`, granted only to `authenticated`. None accept a caller-supplied user or owner ID -- every one uses `auth.uid()` exclusively, so a caller can never act on another user's behalf.
 
@@ -118,7 +120,7 @@ RLS is enabled on all five tables. `anon` has zero policies anywhere, so unauthe
 | `workspace_memberships` | member (`is_workspace_member(workspace_id)`) | none | none | none |
 | `projects` | member (`is_workspace_member(workspace_id)`) | member + `owner_id = auth.uid()` | member | none (archive via UPDATE) |
 | `sessions` | member (`is_workspace_member(workspace_id)`) | member + `owner_id = auth.uid()` | none | none |
-| `messages` | member (`is_workspace_member(workspace_id)`) | member + `sender_id = auth.uid()` | none | none |
+| `messages` | member (`is_workspace_member(workspace_id)`) | member + `sender_id = auth.uid()` + `role = 'user'` (Milestone 12) for ordinary inserts; `role='assistant'` rows only via `insert_assistant_message()` (bypasses RLS as `SECURITY DEFINER`) | none | none |
 
 Ownership columns (`workspaces.owner_id`, `projects.owner_id`, `projects.workspace_id`) cannot be changed by an ordinary `UPDATE` even by a workspace member -- `prevent_ownership_reassignment()` rejects the change regardless of what any RLS policy would otherwise permit, closing a gap a `WITH CHECK owner_id = auth.uid()` policy alone would miss (a user owning two workspaces could otherwise move a project between them).
 
@@ -158,6 +160,8 @@ Milestone 8 implements create/rename/archive/restore entirely in application cod
 
 **Milestone 11 (Creation Sessions)** adds `public.sessions` and `public.messages` (§2.4, §2.5) via one additive migration (`20260726120000_create_sessions_and_messages.sql`), and application code in `apps/web/features/sessions/`. Project Home's Sessions section (`apps/web/app/workspace/projects/[id]/page.tsx`) lists a project's sessions (`listSessions`) and offers `StartSessionForm` (`createSessionAction`) to begin one; a new `/workspace/projects/[id]/sessions/[sessionId]` page (`getSession`, `listMessages`) shows the message history and `SendMessageForm` (`sendMessageAction`) to add to it. Both new tables reuse the existing `is_workspace_member(workspace_id)` RLS helper unchanged -- no new function was required. `getSession` is scoped by `id`, `project_id`, and `workspace_id` together, the same defense-in-depth pattern as `getProject`; both "doesn't exist" and "exists but isn't yours/isn't this project's" render the same generic `notFound()`. Messages are append-only from the application's perspective: `sendMessageAction` only ever inserts, matching the tables having no `UPDATE`/`DELETE` policy at all. This milestone deliberately ships no AI wiring -- every message is human-authored, sent by whichever user submits the form as `sender_id = auth.uid()`; a `role` column and real AI-authored responses are a distinct, later roadmap phase (§8).
 
+**Milestone 12 (AI Orchestration)** implements Platform Architecture §11/§12: a provider-agnostic AI Orchestration Layer with its first Model Provider wired behind it, satisfying Roadmap §11's exit criteria. Two migrations: `20260726232634_add_message_role_and_assistant_reply.sql` (§2.5, §3, §4) and a comment-only follow-up, `20260726232729_update_session_and_message_table_comments.sql`, correcting `sessions`/`messages` table comments that Milestone 11 left stale. Application code lives in `apps/web/lib/ai/`: `provider.ts` defines the `AiProvider` interface (`respond(instruction): Promise<AiProviderResult>`); `providers/openai-provider.ts` is the first, and today only, implementation, calling OpenAI's Chat Completions endpoint (`gpt-4o-mini`, capped at 1,000 output tokens to stay well under `messages.content`'s 10,000-character CHECK) and reading `OPENAI_API_KEY` server-side only -- this file is never imported from a `"use client"` module, so no bundler ever ships the key to the browser; `orchestrator.ts`'s `orchestrateResponse()` is the one entry point anything above this layer calls, routing to the single wired provider today so that adding a second provider later changes only this function's body, never any caller (Product Definition §18, Roadmap §29). `sendMessageAction` (`apps/web/features/sessions/session-actions.ts`) inserts the user's message as before, then calls `orchestrateResponse()` and, on success, `insert_assistant_message()` to record the reply; any failure in that second half -- missing key, provider error, empty response, or the RPC itself failing -- is reported as a non-fatal `aiWarning` (rendered via `FormMessage tone="warning"`) since the user's own message already sent successfully regardless. This is Product Definition §17's **Observed** automation level: the AI generates a session reply, it does not change any Project or Artifact state. The session detail page labels each message "You" or "AI assistant" from `role`. No streaming, retry, or interruption UI yet (Interaction System §12/§14) -- the whole round trip is one synchronous request, communicated only by the existing pending-button spinner; token-level streaming remains deferred (§8).
+
 ---
 
 ## 7. Type generation
@@ -168,7 +172,7 @@ Milestone 8 implements create/rename/archive/restore entirely in application cod
 
 ## 8. Deferred
 
-Not yet implemented, each belonging to a later, distinct roadmap phase: multiple workspaces per user, workspace switching, workspace invitations or additional membership roles, Organisation as a tier above Workspace, guided project creation/duplication, source materials as an attachable Source entity and Project Context as an independent table, the `draft`/`paused`/`completed`/`deleted` project states, the fuller Workspace Overview experience (recent work, pending reviews, next actions beyond a project count), AI Orchestration and a `messages.role` column for AI-authored responses, session naming/status, Artifact/Artifact Version, Activity Event, AI Capability/Provider, Usage Record, Source/Asset, Decision/Audit Event, Notifications. `create_workspace(text)`'s eventual removal (currently unused, left in place) is also unresolved.
+Not yet implemented, each belonging to a later, distinct roadmap phase: multiple workspaces per user, workspace switching, workspace invitations or additional membership roles, Organisation as a tier above Workspace, guided project creation/duplication, source materials as an attachable Source entity and Project Context as an independent table, the `draft`/`paused`/`completed`/`deleted` project states, the fuller Workspace Overview experience (recent work, pending reviews, next actions beyond a project count), session naming/status, a second AI provider and real provider-selection logic, streaming/interrupt/retry AI interactions, Assisted and Controlled Execution automation levels (Product Definition §17), Artifact/Artifact Version, Activity Event, AI Capability/Provider as first-class schema entities, Usage Record, Source/Asset, Decision/Audit Event, Notifications. `create_workspace(text)`'s eventual removal (currently unused, left in place) is also unresolved.
 
 ---
 
@@ -185,3 +189,4 @@ This document is updated whenever a migration changes the live schema it describ
 | 1.2 | 2026-07-26 | Milestone 9: documented the Project Home page and description editing in §6, both against the unchanged schema; updated §8 Deferred accordingly. |
 | 1.3 | 2026-07-26 | Milestone 10: added `purpose`, `desired_outcome`, `key_constraints`, `target_audience` to §2.3 via migration `20260726110000_add_project_context_fields.sql`; documented the new Project Home Context section in §6; updated §8 Deferred accordingly. |
 | 1.4 | 2026-07-26 | Milestone 11: added `public.sessions` and `public.messages` (§2.4, §2.5) via migration `20260726120000_create_sessions_and_messages.sql`; added their RLS rows to §4; documented the new Sessions section on Project Home and the session detail page in §6; updated §8 Deferred accordingly. |
+| 1.5 | 2026-07-26 | Milestone 12: added `messages.role`, made `messages.sender_id` nullable, added the role/sender consistency CHECK, and added `insert_assistant_message()` (§2.5, §3, §4) via migrations `20260726232634_add_message_role_and_assistant_reply.sql` and `20260726232729_update_session_and_message_table_comments.sql`; documented the AI Orchestration Layer, the OpenAI provider, and `sendMessageAction`'s AI-reply wiring in §6; updated §8 Deferred accordingly. |
