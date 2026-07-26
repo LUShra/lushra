@@ -24,7 +24,8 @@ export type Database = {
           content: string
           created_at: string
           id: string
-          sender_id: string
+          role: string
+          sender_id: string | null
           session_id: string
           workspace_id: string
         }
@@ -32,7 +33,8 @@ export type Database = {
           content: string
           created_at?: string
           id?: string
-          sender_id: string
+          role?: string
+          sender_id?: string | null
           session_id: string
           workspace_id: string
         }
@@ -40,7 +42,8 @@ export type Database = {
           content?: string
           created_at?: string
           id?: string
-          sender_id?: string
+          role?: string
+          sender_id?: string | null
           session_id?: string
           workspace_id?: string
         }
@@ -245,6 +248,24 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "workspaces"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      insert_assistant_message: {
+        Args: { message_content: string; target_session_id: string }
+        Returns: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          sender_id: string | null
+          session_id: string
+          workspace_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "messages"
           isOneToOne: true
           isSetofReturn: false
         }

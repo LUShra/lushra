@@ -48,6 +48,10 @@ export function SendMessageForm({ sessionId, projectId, workspaceId }: SendMessa
           <FormMessage tone="error">{state.message}</FormMessage>
         ) : null}
 
+        {state.status === "idle" && state.aiWarning ? (
+          <FormMessage tone="warning">{state.aiWarning}</FormMessage>
+        ) : null}
+
         <Button loading={isPending} size="small" type="submit">
           Send message
         </Button>
