@@ -7,6 +7,9 @@ import { getProject } from "@/features/projects/list-projects";
 import { ProjectContextForm } from "@/features/projects/project-context-form";
 import { ProjectDescriptionForm } from "@/features/projects/project-description-form";
 import { ProjectHomeActions } from "@/features/projects/project-home-actions";
+import { listSessions } from "@/features/sessions/list-sessions";
+import { SessionListItem } from "@/features/sessions/session-list-item";
+import { StartSessionForm } from "@/features/sessions/start-session-form";
 import { getOrCreatePersonalWorkspace } from "@/features/workspace/get-or-create-personal-workspace";
 
 type ProjectHomePageProps = {
@@ -35,6 +38,7 @@ export default async function ProjectHomePage({ params }: ProjectHomePageProps) 
 
   const { project } = projectResult;
   const isArchived = project.status === "archived";
+  const sessionsResult = await listSessions(project.id, project.workspace_id);
 
   return (
     <PageFrame
@@ -63,14 +67,24 @@ export default async function ProjectHomePage({ params }: ProjectHomePageProps) 
         </Card>
 
         <Card variant="inset">
-          <Stack gap={2}>
+          <Stack gap={4}>
             <Heading level={2} visualRole="heading-4">
-              Sessions, artifacts, and review
+              Sessions
             </Heading>
-            <Text color="secondary">
-              Not available yet. Once creation sessions ship, this project&apos;s recent work,
-              pending review, and next actions will appear here.
-            </Text>
+
+            {sessionsResult.status === "error" ? (
+              <Text color="secondary">We couldn&apos;t load sessions right now.</Text>
+            ) : sessionsResult.sessions.length === 0 ? (
+              <Text color="secondary">No sessions yet. Start one to begin working.</Text>
+            ) : (
+              <Stack gap={3}>
+                {sessionsResult.sessions.map((session) => (
+                  <SessionListItem key={session.id} projectId={project.id} session={session} />
+                ))}
+              </Stack>
+            )}
+
+            <StartSessionForm projectId={project.id} workspaceId={project.workspace_id} />
           </Stack>
         </Card>
 
