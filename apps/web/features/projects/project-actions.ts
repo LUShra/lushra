@@ -9,6 +9,7 @@ export type ProjectActionState = {
   message?: string;
   fieldErrors?: {
     name?: string;
+    description?: string;
   };
 };
 
@@ -90,6 +91,41 @@ export async function renameProjectAction(
   }
 
   redirect("/workspace/projects");
+}
+
+export async function updateProjectDescriptionAction(
+  _prevState: ProjectActionState,
+  formData: FormData
+): Promise<ProjectActionState> {
+  const projectId = String(formData.get("projectId") ?? "");
+  const rawDescription = String(formData.get("description") ?? "").trim();
+  const description = rawDescription.length > 0 ? rawDescription : null;
+
+  if (!projectId) {
+    return { status: "error", message: "That project could not be found." };
+  }
+
+  if (description && description.length > 2000) {
+    return {
+      status: "error",
+      fieldErrors: { description: "Description must be 2000 characters or fewer." }
+    };
+  }
+
+  const { supabase } = await requireUser();
+
+  const { error } = await supabase
+    .from("projects")
+    .update({ description })
+    .eq("id", projectId)
+    .select()
+    .single();
+
+  if (error) {
+    return { status: "error", message: "That project's description could not be saved." };
+  }
+
+  redirect(`/workspace/projects/${projectId}`);
 }
 
 export async function archiveProjectAction(

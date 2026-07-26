@@ -57,7 +57,7 @@ Product Definition §30 Project entity, scoped to first-release capability (crea
 | `archived_at` | `timestamptz` | nullable; consistent with `status` via CHECK |
 | `created_at` / `updated_at` | `timestamptz` | `not null default now()`; `updated_at` trigger-maintained |
 
-Created, renamed, archived, and restored directly by application code (Milestone 8, `apps/web/features/projects/`) via ordinary `INSERT`/`UPDATE` through the existing Milestone 6 RLS policies -- no new migration or database function was required. See §8.
+Created, renamed, archived, and restored directly by application code (Milestone 8, `apps/web/features/projects/`) via ordinary `INSERT`/`UPDATE` through the existing Milestone 6 RLS policies -- no new migration or database function was required. `description` is viewable and editable from the Project Home page (Milestone 9). See §6.
 
 ---
 
@@ -115,7 +115,9 @@ Milestone 8 implements create/rename/archive/restore entirely in application cod
 - **Archive / Restore:** update `status` and `archived_at` together (`'archived'` + a timestamp, or `'active'` + `null`) via the same policy; the `projects_status_archived_at_consistency` CHECK is the authoritative guarantee that the two columns never disagree, independent of what the application sends.
 - **Ownership stays immutable:** `owner_id` and `workspace_id` are never included in any update payload, and `prevent_ownership_reassignment()` would reject them if they were.
 - **Honest failure on a stale/foreign target:** every `UPDATE` chains `.select().single()` so that an `id` RLS silently filters out (project deleted, or belonging to another workspace) surfaces as a genuine error rather than a misleading "success" redirect with zero rows actually changed.
-- **Scope:** quick creation (name only) and the `active`/`archived` states established in Milestone 6 -- guided creation, duplication, project home, context editing, and the `draft`/`paused`/`completed`/`deleted` states from Experience Architecture §17 remain deferred (§8).
+- **Scope:** quick creation (name only) and the `active`/`archived` states established in Milestone 6 -- guided creation, duplication, and the `draft`/`paused`/`completed`/`deleted` states from Experience Architecture §17 remain deferred (§8).
+
+**Milestone 9 (Project Home)** adds the "open a project" capability from Product Definition §20 item 4: a dedicated `/workspace/projects/[id]` page (`apps/web/app/workspace/projects/[id]/page.tsx`). `getProject(projectId, workspaceId)` fetches a single row scoped by both `id` and `workspace_id` -- RLS already prevents a cross-workspace read, but the explicit filter keeps the query's intent legible without relying solely on RLS to narrow scope by omission. If the row doesn't exist or isn't visible to the caller, the page renders a generic `notFound()` in both cases -- deliberately not distinguishing "doesn't exist" from "exists but isn't yours," to avoid leaking which projects exist to a user who doesn't own them. `updateProjectDescriptionAction` is the one new mutation, editing the existing `description` column (using it as the "brief" field from Product Definition §20 item 5) via the same `projects_update_member` policy and the same `.select().single()` honest-failure pattern as rename/archive/restore. Archive/restore are also exposed here, reusing the exact same Milestone 8 server actions -- not a duplicated implementation, a second presentation of the same one. The page is honest about what it cannot show yet: a "Sessions, artifacts, and review" section states plainly that this content isn't available, rather than faking it, since no Session/Artifact/Review entities exist yet. The fuller Project Context fields (objective, desired outcome, key constraints, target audience, source materials) from Product Definition §20 item 5 remain deferred (§8) -- they would require new columns, which this milestone did not add.
 
 ---
 
@@ -127,7 +129,7 @@ Milestone 8 implements create/rename/archive/restore entirely in application cod
 
 ## 8. Deferred
 
-Not yet implemented, each belonging to a later, distinct roadmap phase: multiple workspaces per user, workspace switching, workspace invitations or additional membership roles, Organisation as a tier above Workspace, guided project creation/duplication, project home, Project Context as an independent table and its editing UI, the `draft`/`paused`/`completed`/`deleted` project states, Session/Message/Artifact/Artifact Version, Activity Event, AI Capability/Provider, Usage Record, Source/Asset, Decision/Audit Event, Notifications. `create_workspace(text)`'s eventual removal (currently unused, left in place) is also unresolved.
+Not yet implemented, each belonging to a later, distinct roadmap phase: multiple workspaces per user, workspace switching, workspace invitations or additional membership roles, Organisation as a tier above Workspace, guided project creation/duplication, the fuller Project Context fields (objective, desired outcome, key constraints, target audience, source materials) and Project Context as an independent table, the `draft`/`paused`/`completed`/`deleted` project states, the fuller Workspace Overview experience (recent work, pending reviews, next actions beyond a project count), Session/Message/Artifact/Artifact Version, Activity Event, AI Capability/Provider, Usage Record, Source/Asset, Decision/Audit Event, Notifications. `create_workspace(text)`'s eventual removal (currently unused, left in place) is also unresolved.
 
 ---
 
@@ -141,3 +143,4 @@ This document is updated whenever a migration changes the live schema it describ
 | --- | --- | --- |
 | 1.0 | 2026-07-26 | Initial document, covering the Milestone 6 schema (workspaces, workspace_memberships, projects; create_workspace, is_workspace_member) and the Milestone 7 addition (ensure_personal_workspace, workspaces.owner_id uniqueness). |
 | 1.1 | 2026-07-26 | Milestone 8: added §6 documenting application-level project create/rename/archive/restore against the unchanged Milestone 6 schema; updated §8 Deferred accordingly. |
+| 1.2 | 2026-07-26 | Milestone 9: documented the Project Home page and description editing in §6, both against the unchanged schema; updated §8 Deferred accordingly. |

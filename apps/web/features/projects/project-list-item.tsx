@@ -14,6 +14,7 @@ import {
   Stack,
   Text
 } from "@lushra/ui";
+import Link from "next/link";
 
 import type { Project } from "./list-projects";
 import {
@@ -91,7 +92,7 @@ export function ProjectListItem({ project }: ProjectListItemProps) {
           <Inline align="center" gap={4} justify="between">
             <Stack gap={1}>
               <Heading level={2} visualRole="heading-4">
-                {project.name}
+                <Link href={`/workspace/projects/${project.id}`}>{project.name}</Link>
               </Heading>
               <Text color="secondary">{isArchived ? "Archived" : "Active"}</Text>
             </Stack>
