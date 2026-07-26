@@ -3,6 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PageFrame } from "@/components/layout/page-frame";
+import { ArtifactListItem } from "@/features/artifacts/artifact-list-item";
+import { CreateArtifactForm } from "@/features/artifacts/create-artifact-form";
+import { listArtifacts } from "@/features/artifacts/list-artifacts";
 import { getProject } from "@/features/projects/list-projects";
 import { ProjectContextForm } from "@/features/projects/project-context-form";
 import { ProjectDescriptionForm } from "@/features/projects/project-description-form";
@@ -39,6 +42,7 @@ export default async function ProjectHomePage({ params }: ProjectHomePageProps) 
   const { project } = projectResult;
   const isArchived = project.status === "archived";
   const sessionsResult = await listSessions(project.id, project.workspace_id);
+  const artifactsResult = await listArtifacts(project.id, project.workspace_id);
 
   return (
     <PageFrame
@@ -85,6 +89,30 @@ export default async function ProjectHomePage({ params }: ProjectHomePageProps) 
             )}
 
             <StartSessionForm projectId={project.id} workspaceId={project.workspace_id} />
+          </Stack>
+        </Card>
+
+        <Card variant="inset">
+          <Stack gap={4}>
+            <Heading level={2} visualRole="heading-4">
+              Artifacts
+            </Heading>
+
+            {artifactsResult.status === "error" ? (
+              <Text color="secondary">We couldn&apos;t load artifacts right now.</Text>
+            ) : artifactsResult.artifacts.length === 0 ? (
+              <Text color="secondary">
+                No artifacts yet. Create one below, or save a session message as an artifact.
+              </Text>
+            ) : (
+              <Stack gap={3}>
+                {artifactsResult.artifacts.map((artifact) => (
+                  <ArtifactListItem artifact={artifact} key={artifact.id} projectId={project.id} />
+                ))}
+              </Stack>
+            )}
+
+            <CreateArtifactForm projectId={project.id} workspaceId={project.workspace_id} />
           </Stack>
         </Card>
 
