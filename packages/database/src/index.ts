@@ -1,3 +1,5 @@
+export type { Database, Json, Tables, TablesInsert, TablesUpdate } from "./generated/database.types";
+
 export type DatabaseConfig = {
   url: string;
   anonKey: string;
