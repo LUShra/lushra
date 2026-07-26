@@ -1,3 +1,4 @@
+import type { Database } from "@lushra/database";
 import { createBrowserClient } from "@supabase/ssr";
 
 function getSupabaseEnvironment() {
@@ -19,5 +20,5 @@ function getSupabaseEnvironment() {
 export function createClient() {
   const { url, anonKey } = getSupabaseEnvironment();
 
-  return createBrowserClient(url, anonKey);
+  return createBrowserClient<Database>(url, anonKey);
 }
