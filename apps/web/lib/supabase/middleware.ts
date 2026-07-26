@@ -1,3 +1,4 @@
+import type { User } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -15,7 +16,12 @@ function getSupabaseEnvironment() {
   };
 }
 
-export async function updateSession(request: NextRequest) {
+export type SessionUpdate = {
+  response: NextResponse;
+  user: User | null;
+};
+
+export async function updateSession(request: NextRequest): Promise<SessionUpdate> {
   let response = NextResponse.next({
     request,
   });
@@ -23,7 +29,7 @@ export async function updateSession(request: NextRequest) {
   const environment = getSupabaseEnvironment();
 
   if (!environment) {
-    return response;
+    return { response, user: null };
   }
 
   const supabase = createServerClient(
@@ -51,7 +57,9 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  return response;
+  return { response, user };
 }

@@ -64,3 +64,61 @@
   outline: var(--lushra-border-width-thick) solid var(--color-focus);
   outline-offset: 2px;
 }
+
+.trailing {
+  display: flex;
+  align-items: center;
+  gap: var(--lushra-space-3);
+}
+
+.identity {
+  display: flex;
+  align-items: center;
+  gap: var(--lushra-space-2);
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+}
+
+.initials {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--lushra-radius-full);
+  background: var(--color-surface-interactive);
+  color: var(--color-text-primary);
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* Below 1024px only the initials badge is shown visually; the full email
+   stays in the accessibility tree via the same clip technique
+   VisuallyHidden uses, rather than `display: none`, which a screen reader
+   would skip entirely. */
+.email {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  border: 0;
+}
+
+@media (min-width: 1024px) {
+  .email {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    clip-path: none;
+    white-space: normal;
+  }
+}

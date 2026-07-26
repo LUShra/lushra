@@ -7,16 +7,17 @@ import styles from "./app-shell.module.css";
 
 export type AppShellProps = {
   children: ReactNode;
+  userEmail: string | null;
 };
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, userEmail }: AppShellProps) {
   return (
     <div className={styles.root}>
       <SkipLink />
       <Sidebar />
 
       <div className={styles.column}>
-        <TopHeader />
+        <TopHeader userEmail={userEmail} />
 
         <main className={styles.main} id="main-content" tabIndex={-1}>
           {children}

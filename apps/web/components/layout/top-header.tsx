@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { SignOutButton } from "@/features/auth/sign-out-button";
+
 import { MobileNavigation } from "./mobile-navigation";
 import styles from "./top-header.module.css";
 
@@ -17,7 +19,16 @@ function AccountIcon() {
   );
 }
 
-export function TopHeader() {
+function getInitials(email: string): string {
+  const [localPart] = email.split("@");
+  return (localPart ?? "").slice(0, 2).toUpperCase();
+}
+
+export type TopHeaderProps = {
+  userEmail: string | null;
+};
+
+export function TopHeader({ userEmail }: TopHeaderProps) {
   return (
     <header className={styles.root}>
       <div className={styles.leading}>
@@ -28,9 +39,26 @@ export function TopHeader() {
         </Link>
       </div>
 
-      <Link aria-label="Account settings" className={styles.accountAction} href="/workspace/settings">
-        <AccountIcon />
-      </Link>
+      <div className={styles.trailing}>
+        {userEmail ? (
+          <span className={styles.identity} title={userEmail}>
+            <span aria-hidden="true" className={styles.initials}>
+              {getInitials(userEmail)}
+            </span>
+            <span className={styles.email}>{userEmail}</span>
+          </span>
+        ) : null}
+
+        <Link
+          aria-label="Account settings"
+          className={styles.accountAction}
+          href="/workspace/settings"
+        >
+          <AccountIcon />
+        </Link>
+
+        <SignOutButton />
+      </div>
     </header>
   );
 }
