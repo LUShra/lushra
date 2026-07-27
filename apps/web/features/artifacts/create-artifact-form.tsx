@@ -4,12 +4,8 @@ import { useActionState } from "react";
 
 import { Button, Field, FormMessage, Input, Label, Select, Stack } from "@lushra/ui";
 
-import {
-  ARTIFACT_TYPES,
-  ARTIFACT_TYPE_LABELS,
-  createArtifactAction,
-  type ArtifactActionState
-} from "./artifact-actions";
+import { createArtifactAction, type ArtifactActionState } from "./artifact-actions";
+import { ARTIFACT_TYPES, ARTIFACT_TYPE_LABELS } from "./artifact-types";
 
 const initialState: ArtifactActionState = { status: "idle" };
 

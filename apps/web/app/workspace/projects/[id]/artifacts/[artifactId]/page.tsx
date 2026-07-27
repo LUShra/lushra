@@ -3,9 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PageFrame } from "@/components/layout/page-frame";
-import { ARTIFACT_TYPE_LABELS, type ArtifactType } from "@/features/artifacts/artifact-actions";
 import { ArtifactContentForm } from "@/features/artifacts/artifact-content-form";
 import { ArtifactRenameForm } from "@/features/artifacts/artifact-rename-form";
+import { ARTIFACT_TYPE_LABELS, type ArtifactType } from "@/features/artifacts/artifact-types";
 import { getArtifact } from "@/features/artifacts/list-artifacts";
 import { getProject } from "@/features/projects/list-projects";
 import { getOrCreatePersonalWorkspace } from "@/features/workspace/get-or-create-personal-workspace";

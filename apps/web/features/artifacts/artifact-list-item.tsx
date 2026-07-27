@@ -2,7 +2,7 @@ import { Card, Inline, Text } from "@lushra/ui";
 import Link from "next/link";
 
 import type { Artifact } from "./list-artifacts";
-import { ARTIFACT_TYPE_LABELS, type ArtifactType } from "./artifact-actions";
+import { ARTIFACT_TYPE_LABELS, type ArtifactType } from "./artifact-types";
 
 export type ArtifactListItemProps = {
   projectId: string;
