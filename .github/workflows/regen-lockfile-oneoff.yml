@@ -8,11 +8,9 @@ name: One-off lockfile regeneration
 # push it back to the same branch. Delete this file once it has done its
 # job -- it is not meant to be a permanent part of CI.
 on:
-  workflow_dispatch:
-    inputs:
-      branch:
-        description: "Branch to regenerate the lockfile on"
-        required: true
+  push:
+    branches:
+      - deps/next-16-typescript-7-eslint-10-upgrade
 
 permissions:
   contents: write
@@ -24,7 +22,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          ref: ${{ inputs.branch }}
+          ref: ${{ github.ref_name }}
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v6
@@ -47,5 +45,5 @@ jobs:
           else
             git add pnpm-lock.yaml
             git commit -m "chore(deps): regenerate pnpm-lock.yaml [one-off ci]"
-            git push origin HEAD:${{ inputs.branch }}
+            git push origin HEAD:${{ github.ref_name }}
           fi
