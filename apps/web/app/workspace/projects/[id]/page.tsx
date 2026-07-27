@@ -13,6 +13,9 @@ import { ProjectHomeActions } from "@/features/projects/project-home-actions";
 import { listSessions } from "@/features/sessions/list-sessions";
 import { SessionListItem } from "@/features/sessions/session-list-item";
 import { StartSessionForm } from "@/features/sessions/start-session-form";
+import { CreateSourceForm } from "@/features/sources/create-source-form";
+import { listSources } from "@/features/sources/list-sources";
+import { SourceListItem } from "@/features/sources/source-list-item";
 import { getOrCreatePersonalWorkspace } from "@/features/workspace/get-or-create-personal-workspace";
 
 type ProjectHomePageProps = {
@@ -43,6 +46,7 @@ export default async function ProjectHomePage({ params }: ProjectHomePageProps) 
   const isArchived = project.status === "archived";
   const sessionsResult = await listSessions(project.id, project.workspace_id);
   const artifactsResult = await listArtifacts(project.id, project.workspace_id);
+  const sourcesResult = await listSources(project.id, project.workspace_id);
 
   return (
     <PageFrame
@@ -67,6 +71,28 @@ export default async function ProjectHomePage({ params }: ProjectHomePageProps) 
               Context
             </Heading>
             <ProjectContextForm project={project} />
+          </Stack>
+        </Card>
+
+        <Card variant="inset">
+          <Stack gap={4}>
+            <Heading level={2} visualRole="heading-4">
+              Sources
+            </Heading>
+
+            {sourcesResult.status === "error" ? (
+              <Text color="secondary">We couldn&apos;t load sources right now.</Text>
+            ) : sourcesResult.sources.length === 0 ? (
+              <Text color="secondary">No sources yet. Add a link or paste text to inform this project's context.</Text>
+            ) : (
+              <Stack gap={3}>
+                {sourcesResult.sources.map((source) => (
+                  <SourceListItem key={source.id} projectId={project.id} source={source} />
+                ))}
+              </Stack>
+            )}
+
+            <CreateSourceForm projectId={project.id} workspaceId={project.workspace_id} />
           </Stack>
         </Card>
 
