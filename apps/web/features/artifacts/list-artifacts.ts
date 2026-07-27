@@ -1,5 +1,6 @@
 import type { Tables } from "@lushra/database";
 
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 
 export type Artifact = Tables<"artifacts">;
@@ -23,7 +24,7 @@ export async function listArtifacts(
 
   if (error || !data) {
     if (error) {
-      console.error("listArtifacts failed:", error.message);
+      logError("list_artifacts_failed", { projectId, workspaceId, message: error.message });
     }
 
     return { status: "error" };
@@ -58,7 +59,12 @@ export async function getArtifact(
 
   if (error || !data) {
     if (error) {
-      console.error("getArtifact failed:", error.message);
+      logError("get_artifact_failed", {
+        artifactId,
+        projectId,
+        workspaceId,
+        message: error.message
+      });
     }
 
     return { status: "error" };

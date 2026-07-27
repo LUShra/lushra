@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 import { orchestrateResponse } from "@/lib/ai/orchestrator";
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 
 export type SessionActionState = {
@@ -124,7 +125,7 @@ async function respondAsAssistant(
   const result = await orchestrateResponse(instruction);
 
   if (result.status === "error") {
-    console.error("orchestrateResponse failed:", result.message);
+    logError("orchestrate_response_failed", { sessionId, message: result.message });
     return "The AI assistant couldn't respond. Try again.";
   }
 
@@ -134,7 +135,7 @@ async function respondAsAssistant(
   });
 
   if (error) {
-    console.error("insert_assistant_message failed:", error.message);
+    logError("insert_assistant_message_failed", { sessionId, message: error.message });
     return "The AI assistant couldn't respond. Try again.";
   }
 

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 
 export type VersionActionState = {
@@ -132,7 +133,12 @@ export async function restoreArtifactVersionAction(
   });
 
   if (insertError) {
-    console.error("restoreArtifactVersionAction: content restored but history insert failed:", insertError.message);
+    logError("restore_artifact_version_history_insert_failed", {
+      artifactId,
+      versionId,
+      workspaceId,
+      message: insertError.message
+    });
   }
 
   revalidatePath(`/workspace/projects/${projectId}/artifacts/${artifactId}`);

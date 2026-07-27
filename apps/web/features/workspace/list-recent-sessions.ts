@@ -1,5 +1,6 @@
 import type { Tables } from "@lushra/database";
 
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 
 export type RecentSession = Tables<"sessions"> & { projectName: string };
@@ -30,7 +31,7 @@ export async function listRecentSessions(workspaceId: string): Promise<RecentSes
 
   if (error || !sessions) {
     if (error) {
-      console.error("listRecentSessions failed:", error.message);
+      logError("list_recent_sessions_failed", { workspaceId, message: error.message });
     }
 
     return { status: "error" };
@@ -49,7 +50,10 @@ export async function listRecentSessions(workspaceId: string): Promise<RecentSes
 
   if (projectsError || !projects) {
     if (projectsError) {
-      console.error("listRecentSessions (projects) failed:", projectsError.message);
+      logError("list_recent_sessions_projects_failed", {
+        workspaceId,
+        message: projectsError.message
+      });
     }
 
     return { status: "error" };

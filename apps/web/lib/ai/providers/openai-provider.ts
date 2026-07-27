@@ -1,3 +1,5 @@
+import { logError } from "@/lib/log";
+
 import type { AiProvider, AiProviderResult } from "../provider";
 
 const OPENAI_CHAT_COMPLETIONS_URL = "https://api.openai.com/v1/chat/completions";
@@ -42,7 +44,7 @@ export const openAiProvider: AiProvider = {
       });
 
       if (!response.ok) {
-        console.error("openAiProvider request failed with status:", response.status);
+        logError("openai_provider_request_failed", { status: response.status });
         return { status: "error", message: "The AI provider request failed." };
       }
 
@@ -50,16 +52,15 @@ export const openAiProvider: AiProvider = {
       const content = data.choices?.[0]?.message?.content?.trim();
 
       if (!content) {
-        console.error("openAiProvider returned an empty response.");
+        logError("openai_provider_empty_response");
         return { status: "error", message: "The AI provider returned an empty response." };
       }
 
       return { status: "ok", content };
     } catch (error) {
-      console.error(
-        "openAiProvider request threw:",
-        error instanceof Error ? error.message : "unknown error"
-      );
+      logError("openai_provider_request_threw", {
+        message: error instanceof Error ? error.message : "unknown error"
+      });
       return { status: "error", message: "The AI provider request failed." };
     } finally {
       clearTimeout(timeout);

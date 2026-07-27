@@ -1,5 +1,6 @@
 import type { Tables } from "@lushra/database";
 
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 
 export type Project = Tables<"projects">;
@@ -26,7 +27,7 @@ export async function listProjects(workspaceId: string): Promise<ProjectListResu
 
   if (error || !data) {
     if (error) {
-      console.error("listProjects failed:", error.message);
+      logError("list_projects_failed", { workspaceId, message: error.message });
     }
 
     return { status: "error" };
@@ -55,7 +56,7 @@ export async function getProject(projectId: string, workspaceId: string): Promis
 
   if (error || !data) {
     if (error) {
-      console.error("getProject failed:", error.message);
+      logError("get_project_failed", { projectId, workspaceId, message: error.message });
     }
 
     return { status: "error" };

@@ -1,5 +1,6 @@
 import type { Tables } from "@lushra/database";
 
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
@@ -51,6 +52,7 @@ type ColumnSearchResult<T> = { rows: T[] } | { error: true };
 
 async function attachProjectNames<T extends { project_id: string }>(
   supabase: SupabaseServerClient,
+  workspaceId: string,
   rows: T[]
 ): Promise<(T & { projectName: string })[] | null> {
   if (rows.length === 0) {
@@ -66,7 +68,7 @@ async function attachProjectNames<T extends { project_id: string }>(
 
   if (error || !projects) {
     if (error) {
-      console.error("searchWorkspace (project lookup) failed:", error.message);
+      logError("search_workspace_project_lookup_failed", { workspaceId, message: error.message });
     }
 
     return null;
@@ -97,7 +99,7 @@ async function searchProjects(
   const error = byName.error ?? byDescription.error;
 
   if (error) {
-    console.error("searchWorkspace (projects) failed:", error.message);
+    logError("search_workspace_projects_failed", { workspaceId, message: error.message });
     return { error: true };
   }
 
@@ -121,7 +123,7 @@ async function searchArtifacts(
   const error = byTitle.error ?? byContent.error;
 
   if (error) {
-    console.error("searchWorkspace (artifacts) failed:", error.message);
+    logError("search_workspace_artifacts_failed", { workspaceId, message: error.message });
     return { error: true };
   }
 
@@ -142,7 +144,7 @@ async function searchSources(
   const error = byTitle.error ?? byUrl.error ?? byContent.error;
 
   if (error) {
-    console.error("searchWorkspace (sources) failed:", error.message);
+    logError("search_workspace_sources_failed", { workspaceId, message: error.message });
     return { error: true };
   }
 
@@ -182,8 +184,8 @@ export async function searchWorkspace(
   }
 
   const [artifacts, sources] = await Promise.all([
-    attachProjectNames(supabase, artifactsResult.rows),
-    attachProjectNames(supabase, sourcesResult.rows)
+    attachProjectNames(supabase, workspaceId, artifactsResult.rows),
+    attachProjectNames(supabase, workspaceId, sourcesResult.rows)
   ]);
 
   if (!artifacts || !sources) {
