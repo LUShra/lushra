@@ -1,0 +1,49 @@
+name: One-off lockfile regeneration
+
+# Temporary, manually-triggered workflow: the local development sandbox used
+# to prepare this branch cannot reliably complete `pnpm install` (a
+# filesystem-level limitation of that environment, not a real dependency
+# problem), so this lets a real, working pnpm environment (this runner)
+# regenerate pnpm-lock.yaml against the corrected package.json files and
+# push it back to the same branch. Delete this file once it has done its
+# job -- it is not meant to be a permanent part of CI.
+on:
+  push:
+    branches:
+      - deps/next-16-typescript-7-eslint-10-upgrade
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: pnpm
+
+      - name: Regenerate lockfile
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- pnpm-lock.yaml; then
+            echo "Lockfile already up to date, nothing to commit."
+          else
+            git add pnpm-lock.yaml
+            git commit -m "chore(deps): regenerate pnpm-lock.yaml [one-off ci]"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
