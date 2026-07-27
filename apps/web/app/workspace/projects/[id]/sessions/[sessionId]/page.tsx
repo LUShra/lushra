@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PageFrame } from "@/components/layout/page-frame";
+import { SaveAsArtifactButton } from "@/features/artifacts/save-as-artifact-button";
 import { getProject } from "@/features/projects/list-projects";
 import { listMessages } from "@/features/sessions/list-messages";
 import { getSession } from "@/features/sessions/list-sessions";
@@ -87,6 +88,11 @@ export default async function SessionPage({ params }: SessionPageProps) {
                         {senderLabel} · {sentAt}
                       </Text>
                       <Text className={styles.messageContent}>{message.content}</Text>
+                      <SaveAsArtifactButton
+                        content={message.content}
+                        projectId={project.id}
+                        workspaceId={workspaceId}
+                      />
                     </Stack>
                   );
                 })}

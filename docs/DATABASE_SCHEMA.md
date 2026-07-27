@@ -93,6 +93,23 @@ Product Definition §30 Message entity (Milestone 11, extended Milestone 12): a 
 
 `messages_role_sender_consistency` CHECK (Milestone 12) is the authoritative guarantee that a `'user'` row always has a real `sender_id` and an `'assistant'` row never does, independent of what any calling code sends. No `UPDATE`/`DELETE` policy -- messages are immutable durable history, distinct from editable artifacts.
 
+### 2.6 `public.artifacts`
+
+Product Definition §30 Artifact entity (Milestone 13): a durable unit of created work. This milestone ships creation and editing only -- no versioning, review, or export yet, each a distinct later milestone (see §6).
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | `uuid` | Primary key, `default gen_random_uuid()` |
+| `project_id` | `uuid` | `not null references projects(id) on delete cascade` |
+| `workspace_id` | `uuid` | `not null references workspaces(id) on delete cascade`; denormalized from the owning project, same pattern as `sessions.workspace_id` |
+| `owner_id` | `uuid` | `not null references auth.users(id) on delete cascade` |
+| `title` | `text` | `not null`, non-blank, ≤200 characters |
+| `type` | `text` | `not null check (type in ('brief','specification','structured_document','marketing_copy','research_synthesis','content_outline'))` -- the exact named examples in Experience Architecture §24, deliberately a CHECK rather than an ENUM since Product Definition §20 item 7 frames the list as illustrative ("such as") and expected to grow |
+| `content` | `text` | nullable, ≤50,000 characters -- nullable because an artifact can be created title-only and filled in afterwards, matching the "quick creation" ethos already established for projects |
+| `created_at` / `updated_at` | `timestamptz` | `not null default now()`; `updated_at` trigger-maintained |
+
+`owner_id`, `workspace_id`, and `project_id` cannot be changed by an ordinary `UPDATE` -- `prevent_ownership_reassignment()` (§3) was extended in Milestone 13 to cover `artifacts` the same way it already covered `workspaces`/`projects`. No `DELETE` policy this milestone: archiving/deletion for artifacts is deferred (§8).
+
 ---
 
 ## 3. Functions
@@ -103,7 +120,7 @@ Product Definition §30 Message entity (Milestone 11, extended Milestone 12): a 
 | `create_workspace(workspace_name text) returns workspaces` | `SECURITY DEFINER`, `search_path=public` | `authenticated` | Milestone 6's general-purpose workspace creator. **Not currently called by the application** -- superseded for the personal-workspace path by `ensure_personal_workspace()`. Left in place unmodified; calling it for a user who already owns a workspace now fails with a unique-constraint violation rather than silently creating a second one, which is correct given §2.1's uniqueness rule. |
 | `ensure_personal_workspace() returns workspaces` | `SECURITY DEFINER`, `search_path=public` | `authenticated` | The idempotent personal-workspace provisioning entry point. See §5. |
 | `set_updated_at() returns trigger` | invoker, `search_path=public` | (trigger only) | Sets `NEW.updated_at = now()` on `workspaces` and `projects`. |
-| `prevent_ownership_reassignment() returns trigger` | invoker, `search_path=public` | (trigger only) | Rejects any change to `owner_id` (and, on `projects`, `workspace_id`) via `UPDATE`. |
+| `prevent_ownership_reassignment() returns trigger` | invoker, `search_path=public` | (trigger only) | Rejects any change to `owner_id` (and, on `projects`/`artifacts`, `workspace_id`; on `artifacts`, also `project_id`) via `UPDATE`. Extended in Milestone 13 (`20260726234601`) to cover `artifacts`; that same migration's `CREATE OR REPLACE` unintentionally dropped this function's pinned `search_path` (a prior `ALTER FUNCTION ... SET search_path` is not preserved across a full replace), caught immediately by the security advisor and re-pinned inline in the very next migration, `20260726234658`. |
 | `insert_assistant_message(target_session_id uuid, message_content text) returns messages` | `SECURITY DEFINER`, `search_path=public` | `authenticated` | Milestone 12: the only path that can create a `role='assistant'` message. Resolves `workspace_id` from the session itself (not a caller-supplied value) and re-checks `is_workspace_member()`; accepts no caller-supplied `role` or `sender_id`, so no parameter can escalate it into creating a human-attributed row or a row outside the caller's own workspace. See §6. |
 
 All `SECURITY DEFINER` functions: `search_path` pinned, every reference schema-qualified, `EXECUTE` revoked from `PUBLIC` and `anon`, granted only to `authenticated`. None accept a caller-supplied user or owner ID -- every one uses `auth.uid()` exclusively, so a caller can never act on another user's behalf.
@@ -112,7 +129,7 @@ All `SECURITY DEFINER` functions: `search_path` pinned, every reference schema-q
 
 ## 4. Row-Level Security
 
-RLS is enabled on all five tables. `anon` has zero policies anywhere, so unauthenticated requests receive zero rows or a permission-denied error, never real data.
+RLS is enabled on all six tables. `anon` has zero policies anywhere, so unauthenticated requests receive zero rows or a permission-denied error, never real data.
 
 | Table | SELECT | INSERT | UPDATE | DELETE |
 |---|---|---|---|---|
@@ -121,6 +138,7 @@ RLS is enabled on all five tables. `anon` has zero policies anywhere, so unauthe
 | `projects` | member (`is_workspace_member(workspace_id)`) | member + `owner_id = auth.uid()` | member | none (archive via UPDATE) |
 | `sessions` | member (`is_workspace_member(workspace_id)`) | member + `owner_id = auth.uid()` | none | none |
 | `messages` | member (`is_workspace_member(workspace_id)`) | member + `sender_id = auth.uid()` + `role = 'user'` (Milestone 12) for ordinary inserts; `role='assistant'` rows only via `insert_assistant_message()` (bypasses RLS as `SECURITY DEFINER`) | none | none |
+| `artifacts` | member (`is_workspace_member(workspace_id)`) | member + `owner_id = auth.uid()` | member | none (Milestone 13) |
 
 Ownership columns (`workspaces.owner_id`, `projects.owner_id`, `projects.workspace_id`) cannot be changed by an ordinary `UPDATE` even by a workspace member -- `prevent_ownership_reassignment()` rejects the change regardless of what any RLS policy would otherwise permit, closing a gap a `WITH CHECK owner_id = auth.uid()` policy alone would miss (a user owning two workspaces could otherwise move a project between them).
 
@@ -162,6 +180,8 @@ Milestone 8 implements create/rename/archive/restore entirely in application cod
 
 **Milestone 12 (AI Orchestration)** implements Platform Architecture §11/§12: a provider-agnostic AI Orchestration Layer with its first Model Provider wired behind it, satisfying Roadmap §11's exit criteria. Two migrations: `20260726232634_add_message_role_and_assistant_reply.sql` (§2.5, §3, §4) and a comment-only follow-up, `20260726232729_update_session_and_message_table_comments.sql`, correcting `sessions`/`messages` table comments that Milestone 11 left stale. Application code lives in `apps/web/lib/ai/`: `provider.ts` defines the `AiProvider` interface (`respond(instruction): Promise<AiProviderResult>`); `providers/openai-provider.ts` is the first, and today only, implementation, calling OpenAI's Chat Completions endpoint (`gpt-4o-mini`, capped at 1,000 output tokens to stay well under `messages.content`'s 10,000-character CHECK) and reading `OPENAI_API_KEY` server-side only -- this file is never imported from a `"use client"` module, so no bundler ever ships the key to the browser; `orchestrator.ts`'s `orchestrateResponse()` is the one entry point anything above this layer calls, routing to the single wired provider today so that adding a second provider later changes only this function's body, never any caller (Product Definition §18, Roadmap §29). `sendMessageAction` (`apps/web/features/sessions/session-actions.ts`) inserts the user's message as before, then calls `orchestrateResponse()` and, on success, `insert_assistant_message()` to record the reply; any failure in that second half -- missing key, provider error, empty response, or the RPC itself failing -- is reported as a non-fatal `aiWarning` (rendered via `FormMessage tone="warning"`) since the user's own message already sent successfully regardless. This is Product Definition §17's **Observed** automation level: the AI generates a session reply, it does not change any Project or Artifact state. The session detail page labels each message "You" or "AI assistant" from `role`. No streaming, retry, or interruption UI yet (Interaction System §12/§14) -- the whole round trip is one synchronous request, communicated only by the existing pending-button spinner; token-level streaming remains deferred (§8).
 
+**Milestone 13 (Artifacts)** begins Roadmap §13 (Artifact System): creation and editing only, via one migration, `20260726234601_create_artifacts_table.sql` (§2.6, §3, §4), plus a same-session corrective, `20260726234658_repin_prevent_ownership_reassignment_search_path.sql` (see §3's note on `prevent_ownership_reassignment()`). Application code lives in `apps/web/features/artifacts/`: `listArtifacts`/`getArtifact` (scoped by `id`, `project_id`, and `workspace_id` together, the same defense-in-depth pattern as `getSession`), and four actions -- `createArtifactAction` (a standalone quick-create form on Project Home: title + type), `createArtifactFromMessageAction` (the First-Value Journey bridge, Experience Architecture §13: a "Save as artifact" button on every session message inserts a new artifact with that message's content, a title derived from its first line, and `type: 'brief'` as the one-click default), `renameArtifactAction`, and `updateArtifactContentAction` -- all following the same `.select().single()` honest-failure pattern as every other mutation in this project. A new `/workspace/projects/[id]/artifacts/[artifactId]` page shows and edits an artifact's title and content. Project Home gains an "Artifacts" section (list + quick-create), mirroring the Sessions section's structure. `packages/ui` gains one new primitive, `Select` (`select.tsx`/`select.module.css`), needed for the type picker -- built to the exact same `useFieldContext()`/`invalid`/`id`-from-context pattern as `Input`, not a parallel design system. No versioning (Experience Architecture §26), review (§27, Product Definition §20 item 10), export (§29), or archive/delete for artifacts yet -- each is its own later milestone (§8); a single mutable row is the correct minimal shape until versioning genuinely exists.
+
 ---
 
 ## 7. Type generation
@@ -172,7 +192,7 @@ Milestone 8 implements create/rename/archive/restore entirely in application cod
 
 ## 8. Deferred
 
-Not yet implemented, each belonging to a later, distinct roadmap phase: multiple workspaces per user, workspace switching, workspace invitations or additional membership roles, Organisation as a tier above Workspace, guided project creation/duplication, source materials as an attachable Source entity and Project Context as an independent table, the `draft`/`paused`/`completed`/`deleted` project states, the fuller Workspace Overview experience (recent work, pending reviews, next actions beyond a project count), session naming/status, a second AI provider and real provider-selection logic, streaming/interrupt/retry AI interactions, Assisted and Controlled Execution automation levels (Product Definition §17), Artifact/Artifact Version, Activity Event, AI Capability/Provider as first-class schema entities, Usage Record, Source/Asset, Decision/Audit Event, Notifications. `create_workspace(text)`'s eventual removal (currently unused, left in place) is also unresolved.
+Not yet implemented, each belonging to a later, distinct roadmap phase: multiple workspaces per user, workspace switching, workspace invitations or additional membership roles, Organisation as a tier above Workspace, guided project creation/duplication, source materials as an attachable Source entity and Project Context as an independent table, the `draft`/`paused`/`completed`/`deleted` project states, the fuller Workspace Overview experience (recent work, pending reviews, next actions beyond a project count), session naming/status, a second AI provider and real provider-selection logic, streaming/interrupt/retry AI interactions, Assisted and Controlled Execution automation levels (Product Definition §17), Artifact Version and versioning/comparison/restore (Experience Architecture §26), Review workflow and states (§27, Product Definition §20 item 10), Export (§29), artifact archive/delete/duplication, Activity Event, AI Capability/Provider as first-class schema entities, Usage Record, Source/Asset, Decision/Audit Event, Notifications. `create_workspace(text)`'s eventual removal (currently unused, left in place) is also unresolved.
 
 ---
 
@@ -190,3 +210,4 @@ This document is updated whenever a migration changes the live schema it describ
 | 1.3 | 2026-07-26 | Milestone 10: added `purpose`, `desired_outcome`, `key_constraints`, `target_audience` to §2.3 via migration `20260726110000_add_project_context_fields.sql`; documented the new Project Home Context section in §6; updated §8 Deferred accordingly. |
 | 1.4 | 2026-07-26 | Milestone 11: added `public.sessions` and `public.messages` (§2.4, §2.5) via migration `20260726120000_create_sessions_and_messages.sql`; added their RLS rows to §4; documented the new Sessions section on Project Home and the session detail page in §6; updated §8 Deferred accordingly. |
 | 1.5 | 2026-07-26 | Milestone 12: added `messages.role`, made `messages.sender_id` nullable, added the role/sender consistency CHECK, and added `insert_assistant_message()` (§2.5, §3, §4) via migrations `20260726232634_add_message_role_and_assistant_reply.sql` and `20260726232729_update_session_and_message_table_comments.sql`; documented the AI Orchestration Layer, the OpenAI provider, and `sendMessageAction`'s AI-reply wiring in §6; updated §8 Deferred accordingly. |
+| 1.6 | 2026-07-26 | Milestone 13: added `public.artifacts` (§2.6) and extended `prevent_ownership_reassignment()` to cover it (§3) via migrations `20260726234601_create_artifacts_table.sql` and `20260726234658_repin_prevent_ownership_reassignment_search_path.sql` (the latter fixing a search_path regression the former introduced); added its RLS row to §4; documented artifact creation/editing and the session-to-artifact bridge in §6; updated §8 Deferred accordingly. |

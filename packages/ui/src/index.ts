@@ -27,6 +27,8 @@ export { Input, type InputProps } from "./components/input";
 
 export { Textarea, type TextareaProps } from "./components/textarea";
 
+export { Select, type SelectProps } from "./components/select";
+
 export {
   Field,
   type FieldProps,
