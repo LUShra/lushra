@@ -27,6 +27,7 @@ export const openAiProvider: AiProvider = {
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    const startedAt = Date.now();
 
     try {
       const response = await fetch(OPENAI_CHAT_COMPLETIONS_URL, {
@@ -44,7 +45,11 @@ export const openAiProvider: AiProvider = {
       });
 
       if (!response.ok) {
-        logError("openai_provider_request_failed", { status: response.status });
+        logError("openai_provider_request_failed", {
+          provider: "openai",
+          status: response.status,
+          durationMs: Date.now() - startedAt
+        });
         return { status: "error", message: "The AI provider request failed." };
       }
 
@@ -52,13 +57,18 @@ export const openAiProvider: AiProvider = {
       const content = data.choices?.[0]?.message?.content?.trim();
 
       if (!content) {
-        logError("openai_provider_empty_response");
+        logError("openai_provider_empty_response", {
+          provider: "openai",
+          durationMs: Date.now() - startedAt
+        });
         return { status: "error", message: "The AI provider returned an empty response." };
       }
 
       return { status: "ok", content };
     } catch (error) {
       logError("openai_provider_request_threw", {
+        provider: "openai",
+        durationMs: Date.now() - startedAt,
         message: error instanceof Error ? error.message : "unknown error"
       });
       return { status: "error", message: "The AI provider request failed." };

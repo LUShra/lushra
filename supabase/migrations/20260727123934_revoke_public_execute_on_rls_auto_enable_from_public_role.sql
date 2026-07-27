@@ -1,0 +1,22 @@
+-- Release Candidate 2: security hardening -- correction.
+-- Rollback: grant execute on function public.rls_auto_enable() to public;
+--
+-- Supabase's security advisor flagged public.rls_auto_enable() (a
+-- Supabase-platform-installed DDL event-trigger helper, owner: postgres,
+-- not created by any migration in this repository) as callable directly
+-- via RPC by both `anon` and `authenticated`. Its body calls
+-- pg_event_trigger_ddl_commands(), which only returns data inside a real
+-- event-trigger firing -- calling it directly via RPC always errors out
+-- harmlessly, so this was never exploitable, but revoking public EXECUTE
+-- closes the advisor finding and matches this schema's existing
+-- least-privilege pattern for every other function. Event triggers fire
+-- under the privileges of the role performing the DDL (never
+-- anon/authenticated in this application's normal operation), so this
+-- does not affect the function's real, automatic purpose.
+--
+-- Revoking from PUBLIC itself (rather than the individual roles the
+-- prior migration targeted) is the actual fix -- verified directly via
+-- has_function_privilege('anon', ...) / ('authenticated', ...) both
+-- returning false after this statement, not assumed from the advisor
+-- alone.
+revoke execute on function public.rls_auto_enable() from public;
