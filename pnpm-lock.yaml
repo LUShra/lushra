@@ -36,9 +36,6 @@ importers:
         specifier: ^19.1.0
         version: 19.2.8(react@19.2.8)
     devDependencies:
-      '@eslint/eslintrc':
-        specifier: ^3.3.0
-        version: 3.3.6(supports-color@7.2.0)
       '@lushra/eslint-config':
         specifier: workspace:*
         version: link:../../packages/config/eslint
