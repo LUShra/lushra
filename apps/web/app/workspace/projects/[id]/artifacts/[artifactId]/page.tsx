@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { PageFrame } from "@/components/layout/page-frame";
 import { ArtifactContentForm } from "@/features/artifacts/artifact-content-form";
 import { ArtifactRenameForm } from "@/features/artifacts/artifact-rename-form";
+import { ArtifactReviewActions } from "@/features/artifacts/artifact-review-actions";
 import { ARTIFACT_TYPE_LABELS, type ArtifactType } from "@/features/artifacts/artifact-types";
 import { getArtifact } from "@/features/artifacts/list-artifacts";
 import { listArtifactVersions } from "@/features/artifacts/list-versions";
@@ -58,6 +59,15 @@ export default async function ArtifactPage({ params }: ArtifactPageProps) {
       title={artifact.title}
     >
       <Stack gap={8}>
+        <Card variant="inset">
+          <Stack gap={4}>
+            <Heading level={2} visualRole="heading-4">
+              Review
+            </Heading>
+            <ArtifactReviewActions artifact={artifact} projectId={project.id} />
+          </Stack>
+        </Card>
+
         <Card variant="inset">
           <Stack gap={4}>
             <Heading level={2} visualRole="heading-4">

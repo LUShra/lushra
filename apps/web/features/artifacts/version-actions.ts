@@ -110,9 +110,12 @@ export async function restoreArtifactVersionAction(
     return { status: "error", message: "That version could not be found." };
   }
 
+  // Restoring changes live content just like a direct edit does -- also
+  // resets status to draft (Milestone 15) so an "Approved"/"Rejected"
+  // badge can never silently diverge from what was actually reviewed.
   const { error: updateError } = await supabase
     .from("artifacts")
-    .update({ content: version.content })
+    .update({ content: version.content, status: "draft" })
     .eq("id", artifactId)
     .select()
     .single();

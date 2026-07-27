@@ -68,6 +68,7 @@ export type Database = {
           id: string
           owner_id: string
           project_id: string
+          status: string
           title: string
           type: string
           updated_at: string
@@ -79,6 +80,7 @@ export type Database = {
           id?: string
           owner_id: string
           project_id: string
+          status?: string
           title: string
           type: string
           updated_at?: string
@@ -90,6 +92,7 @@ export type Database = {
           id?: string
           owner_id?: string
           project_id?: string
+          status?: string
           title?: string
           type?: string
           updated_at?: string
