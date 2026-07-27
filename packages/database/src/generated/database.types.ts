@@ -255,6 +255,60 @@ export type Database = {
           },
         ]
       }
+      sources: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          owner_id: string
+          project_id: string
+          title: string
+          type: string
+          updated_at: string
+          url: string | null
+          workspace_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          owner_id: string
+          project_id: string
+          title: string
+          type: string
+          updated_at?: string
+          url?: string | null
+          workspace_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          owner_id?: string
+          project_id?: string
+          title?: string
+          type?: string
+          updated_at?: string
+          url?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sources_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sources_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workspace_memberships: {
         Row: {
           created_at: string
