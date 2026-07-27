@@ -14,13 +14,13 @@
     "generate-types": "supabase gen types typescript --project-id fiilitjyencsgxrvpmzt --schema public > src/generated/database.types.ts"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.57.0"
+    "@supabase/supabase-js": "^2.110.9"
   },
   "devDependencies": {
     "@lushra/eslint-config": "workspace:*",
     "@lushra/typescript-config": "workspace:*",
-    "@types/node": "^26.1.1",
-    "eslint": "^9.39.5",
-    "typescript": "^6.0.3"
+    "@types/node": "^26.1.2",
+    "eslint": "^10.8.0",
+    "typescript": "^7.0.2"
   }
 }
