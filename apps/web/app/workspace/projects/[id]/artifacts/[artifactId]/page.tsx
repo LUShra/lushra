@@ -7,6 +7,9 @@ import { ArtifactContentForm } from "@/features/artifacts/artifact-content-form"
 import { ArtifactRenameForm } from "@/features/artifacts/artifact-rename-form";
 import { ARTIFACT_TYPE_LABELS, type ArtifactType } from "@/features/artifacts/artifact-types";
 import { getArtifact } from "@/features/artifacts/list-artifacts";
+import { listArtifactVersions } from "@/features/artifacts/list-versions";
+import { SaveVersionButton } from "@/features/artifacts/save-version-button";
+import { VersionListItem } from "@/features/artifacts/version-list-item";
 import { getProject } from "@/features/projects/list-projects";
 import { getOrCreatePersonalWorkspace } from "@/features/workspace/get-or-create-personal-workspace";
 
@@ -45,6 +48,7 @@ export default async function ArtifactPage({ params }: ArtifactPageProps) {
   const { project } = projectResult;
   const { artifact } = artifactResult;
   const typeLabel = ARTIFACT_TYPE_LABELS[artifact.type as ArtifactType] ?? artifact.type;
+  const versionsResult = await listArtifactVersions(artifact.id, workspaceId);
 
   return (
     <PageFrame
@@ -69,6 +73,41 @@ export default async function ArtifactPage({ params }: ArtifactPageProps) {
               Content
             </Heading>
             <ArtifactContentForm artifact={artifact} />
+          </Stack>
+        </Card>
+
+        <Card variant="inset">
+          <Stack gap={4}>
+            <Heading level={2} visualRole="heading-4">
+              Versions
+            </Heading>
+
+            {versionsResult.status === "error" ? (
+              <Text color="secondary">We couldn&apos;t load versions right now.</Text>
+            ) : versionsResult.versions.length === 0 ? (
+              <Text color="secondary">
+                No versions saved yet. Save one to record this content as a checkpoint.
+              </Text>
+            ) : (
+              <Stack gap={3}>
+                {versionsResult.versions.map((version, index) => (
+                  <VersionListItem
+                    artifactId={artifact.id}
+                    key={version.id}
+                    projectId={project.id}
+                    version={version}
+                    versionNumber={versionsResult.versions.length - index}
+                    workspaceId={workspaceId}
+                  />
+                ))}
+              </Stack>
+            )}
+
+            <SaveVersionButton
+              artifactId={artifact.id}
+              projectId={project.id}
+              workspaceId={workspaceId}
+            />
           </Stack>
         </Card>
       </Stack>
