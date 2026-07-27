@@ -1,4 +1,8 @@
 -- Release Candidate 1: performance hardening.
+-- Applied to the live project in Release Candidate 2 (this filename was
+-- renamed from its original 20260727090000 timestamp to 20260727123345
+-- to match the version Supabase actually recorded on application --
+-- content is byte-identical to what RC1 reviewed and RC2 applied).
 -- Rollback:
 --   drop index if exists public.sources_workspace_id_idx;
 --   drop index if exists public.sessions_workspace_id_idx;

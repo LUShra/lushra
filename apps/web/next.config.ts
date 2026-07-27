@@ -1,12 +1,10 @@
 import type { NextConfig } from "next";
 
 /**
- * Standard, low-risk hardening headers only -- none of these change how
- * any page renders or behaves, unlike a Content-Security-Policy, which
- * this app does not yet ship: getting one wrong (blocking Next's own
- * hydration script, a font, or an image) is a real regression risk that
- * needs testing in a real browser this environment can't do. That stays
- * a follow-up, done deliberately rather than shipped blind.
+ * Standard, low-risk hardening headers, applied statically to every
+ * response. The Content-Security-Policy lives in middleware.ts instead
+ * of here -- it embeds a fresh per-request nonce, which a static
+ * `headers()` config here has no way to generate.
  */
 const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },

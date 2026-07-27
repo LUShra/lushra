@@ -4,7 +4,9 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
 import { orchestrateResponse } from "@/lib/ai/orchestrator";
+import { getCorrelationId } from "@/lib/correlation";
 import { logError } from "@/lib/log";
+import { buildRateLimitKey, checkRateLimit, describeRetryAfter } from "@/lib/rate-limit";
 import { createClient } from "@/lib/supabase/server";
 
 export type SessionActionState = {
@@ -104,7 +106,22 @@ export async function sendMessageAction(
     return { status: "error", message: "That message could not be sent." };
   }
 
-  const aiWarning = await respondAsAssistant(supabase, sessionId, content);
+  // Gates only the AI call, not the user's own message (already inserted
+  // above) -- 20 AI responses per hour per user bounds provider cost
+  // without blocking someone from simply chatting in a session.
+  const correlationId = await getCorrelationId();
+  const rateLimit = await checkRateLimit(
+    buildRateLimitKey("ai_generation", "user", user.id),
+    20,
+    60 * 60,
+    correlationId
+  );
+
+  const aiWarning = rateLimit.allowed
+    ? await respondAsAssistant(supabase, sessionId, content)
+    : `You've reached the AI response limit for now. Try again ${describeRetryAfter(
+        rateLimit.retryAfterSeconds
+      )}.`;
 
   revalidatePath(`/workspace/projects/${projectId}/sessions/${sessionId}`);
 

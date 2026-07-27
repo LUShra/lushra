@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { AUTH_EVENTS, logAuthEvent, normalizeAuthError } from "@/features/auth/auth-events";
 import { getSafeRedirectPath } from "@/features/auth/redirects";
 import { createClient } from "@/lib/supabase/server";
 
@@ -20,20 +21,39 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const tokenHash = searchParams.get("token_hash");
   const type = searchParams.get("type");
   const next = getSafeRedirectPath(searchParams.get("next"));
+  const correlationId = request.headers.get("x-vercel-id") ?? undefined;
 
   if (!tokenHash || !isSupportedOtpType(type)) {
+    logAuthEvent("warn", AUTH_EVENTS.confirmationInvalidRequest, {
+      correlationId,
+      route: "/auth/confirm",
+      otpType: type ?? undefined
+    });
     return NextResponse.redirect(
       new URL("/auth/sign-in?error=invalid_confirmation_link", origin)
     );
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
+  const { data, error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
 
   if (error) {
+    logAuthEvent("warn", AUTH_EVENTS.confirmationFailed, {
+      correlationId,
+      route: "/auth/confirm",
+      otpType: type,
+      ...normalizeAuthError(error)
+    });
     const fallback = type === "recovery" ? "/auth/forgot-password" : "/auth/sign-in";
     return NextResponse.redirect(new URL(`${fallback}?error=confirmation_failed`, origin));
   }
+
+  logAuthEvent("info", AUTH_EVENTS.confirmationSucceeded, {
+    correlationId,
+    route: "/auth/confirm",
+    otpType: type,
+    userId: data.user?.id
+  });
 
   return NextResponse.redirect(new URL(next, origin));
 }

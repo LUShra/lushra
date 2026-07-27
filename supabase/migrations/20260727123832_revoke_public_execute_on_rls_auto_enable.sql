@@ -1,0 +1,13 @@
+-- Release Candidate 2: security hardening (superseded by the very next
+-- migration -- left in place, never rewritten, per this schema's
+-- established "never rewrite an applied migration" rule; see also
+-- Milestone 13's search_path regression + Milestone 13's follow-up fix
+-- in docs/DATABASE_SCHEMA.md §3 for the same precedent).
+--
+-- This attempt revoked EXECUTE from the named anon/authenticated roles,
+-- but Postgres grants EXECUTE on every new function to PUBLIC by
+-- default, which supersedes a revoke aimed at individual roles -- so
+-- this statement was a harmless no-op. Caught immediately by re-checking
+-- has_function_privilege() rather than trusting the advisor's cache, and
+-- corrected in the next migration, 20260727123934.
+revoke execute on function public.rls_auto_enable() from anon, authenticated;

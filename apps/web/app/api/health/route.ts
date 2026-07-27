@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { logEvent } from "@/lib/log";
+
 type SupabaseCheck =
   | { status: "healthy"; latencyMs: number }
   | { status: "not_configured" }
@@ -32,6 +34,12 @@ async function checkSupabase(): Promise<SupabaseCheck> {
 export async function GET(): Promise<NextResponse> {
   const supabase = await checkSupabase();
   const status = supabase.status === "healthy" ? "healthy" : "degraded";
+
+  if (status === "degraded") {
+    // A degraded health check has no other user watching it fail --
+    // this is the one place that observer is a log line, not a request.
+    logEvent("warn", "health_check_degraded", { supabaseStatus: supabase.status });
+  }
 
   return NextResponse.json(
     {

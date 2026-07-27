@@ -216,6 +216,24 @@ export type Database = {
           },
         ]
       }
+      rate_limit_hits: {
+        Row: {
+          bucket_key: string
+          created_at: string
+          id: number
+        }
+        Insert: {
+          bucket_key: string
+          created_at?: string
+          id?: never
+        }
+        Update: {
+          bucket_key?: string
+          created_at?: string
+          id?: never
+        }
+        Relationships: []
+      }
       sessions: {
         Row: {
           created_at: string
@@ -370,6 +388,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_rate_limit: {
+        Args: {
+          p_bucket_key: string
+          p_max_hits: number
+          p_window_seconds: number
+        }
+        Returns: {
+          allowed: boolean
+          retry_after_seconds: number
+        }[]
+      }
       create_workspace: {
         Args: { workspace_name: string }
         Returns: {
