@@ -1,5 +1,8 @@
 {
   "extends": "@lushra/typescript-config/base.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
 }
