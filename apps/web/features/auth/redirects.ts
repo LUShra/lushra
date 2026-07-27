@@ -1,5 +1,3 @@
-import { headers } from "next/headers";
-
 export const DEFAULT_REDIRECT_PATH = "/workspace";
 
 const INTERNAL_BASE = "http://internal.invalid";
@@ -38,9 +36,18 @@ export function getSafeRedirectPath(candidate: string | null | undefined): strin
 }
 
 /**
- * NEXT_PUBLIC_APP_URL is the canonical override; VERCEL_URL covers preview
- * deployments (each gets a unique host); the request's own Host header is
- * the last resort for local development without an .env.local present.
+ * NEXT_PUBLIC_APP_URL is the canonical override; VERCEL_URL covers every
+ * deployed environment (Vercel injects it for production and every
+ * preview, each with its own unique host), so this is reached in practice
+ * only for local dev without an .env.local present.
+ *
+ * Deliberately does NOT fall back to the request's own Host header: that
+ * header is attacker-controllable on any request reaching a public
+ * endpoint, and this value feeds directly into `emailRedirectTo`/
+ * `redirectTo` URLs sent in sign-up confirmation and password-reset
+ * emails -- trusting it would be a host-header injection / password-reset
+ * link poisoning vector. A fixed localhost fallback covers local dev
+ * instead, matching this file's own default redirect path.
  */
 export async function getAppOrigin(): Promise<string> {
   const configured = process.env.NEXT_PUBLIC_APP_URL;
@@ -53,14 +60,6 @@ export async function getAppOrigin(): Promise<string> {
 
   if (vercelUrl) {
     return `https://${vercelUrl}`;
-  }
-
-  const headerList = await headers();
-  const host = headerList.get("host");
-
-  if (host) {
-    const protocol = host.startsWith("localhost") ? "http" : "https";
-    return `${protocol}://${host}`;
   }
 
   return "http://localhost:3000";

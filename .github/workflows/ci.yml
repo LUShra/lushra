@@ -34,5 +34,13 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      # Node's native TypeScript execution (used by apps/web's "test"
+      # script) needs Node >=22.6 -- satisfied here since node-version
+      # above is pinned to 24, independent of the broader Node range the
+      # app itself supports for building/running (see root package.json
+      # engines).
+      - name: Test
+        run: pnpm test
+
       - name: Build
         run: pnpm build

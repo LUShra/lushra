@@ -73,7 +73,7 @@ export async function createProjectAction(
 
   if (error) {
     logError("create_project_failed", { workspaceId, message: error.message });
-    return { status: "error", message: error.message };
+    return { status: "error", message: "That project could not be created." };
   }
 
   redirect("/workspace/projects");
