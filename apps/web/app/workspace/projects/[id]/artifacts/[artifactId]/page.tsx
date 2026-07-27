@@ -7,6 +7,7 @@ import { ArtifactContentForm } from "@/features/artifacts/artifact-content-form"
 import { ArtifactRenameForm } from "@/features/artifacts/artifact-rename-form";
 import { ArtifactReviewActions } from "@/features/artifacts/artifact-review-actions";
 import { ARTIFACT_TYPE_LABELS, type ArtifactType } from "@/features/artifacts/artifact-types";
+import { ExportActions } from "@/features/artifacts/export-actions";
 import { getArtifact } from "@/features/artifacts/list-artifacts";
 import { listArtifactVersions } from "@/features/artifacts/list-versions";
 import { SaveVersionButton } from "@/features/artifacts/save-version-button";
@@ -89,6 +90,15 @@ export default async function ArtifactPage({ params }: ArtifactPageProps) {
         <Card variant="inset">
           <Stack gap={4}>
             <Heading level={2} visualRole="heading-4">
+              Export
+            </Heading>
+            <ExportActions content={artifact.content} titleForFilename={artifact.title} />
+          </Stack>
+        </Card>
+
+        <Card variant="inset">
+          <Stack gap={4}>
+            <Heading level={2} visualRole="heading-4">
               Versions
             </Heading>
 
@@ -103,6 +113,7 @@ export default async function ArtifactPage({ params }: ArtifactPageProps) {
                 {versionsResult.versions.map((version, index) => (
                   <VersionListItem
                     artifactId={artifact.id}
+                    artifactTitle={artifact.title}
                     key={version.id}
                     projectId={project.id}
                     version={version}
