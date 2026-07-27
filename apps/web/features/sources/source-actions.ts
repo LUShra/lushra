@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 import { SOURCE_TYPES, type SourceType } from "./source-types";
 
@@ -123,6 +124,7 @@ export async function createSourceAction(
   });
 
   if (error) {
+    logError("create_source_failed", { projectId, workspaceId, message: error.message });
     return { status: "error", message: "That source could not be added." };
   }
 
@@ -187,6 +189,7 @@ export async function updateSourceAction(
       .single();
 
     if (error) {
+      logError("update_source_failed", { sourceId, projectId, message: error.message });
       return { status: "error", message: "That source could not be updated." };
     }
   } else {
@@ -211,6 +214,7 @@ export async function updateSourceAction(
       .single();
 
     if (error) {
+      logError("update_source_failed", { sourceId, projectId, message: error.message });
       return { status: "error", message: "That source could not be updated." };
     }
   }
@@ -241,6 +245,7 @@ export async function deleteSourceAction(
   const { error } = await supabase.from("sources").delete().eq("id", sourceId).select().single();
 
   if (error) {
+    logError("delete_source_failed", { sourceId, projectId, message: error.message });
     return { status: "error", message: "That source could not be removed." };
   }
 
