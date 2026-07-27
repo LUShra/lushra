@@ -40,6 +40,15 @@ function ProjectsIcon() {
   );
 }
 
+function SearchIcon() {
+  return (
+    <svg aria-hidden="true" fill="none" height="20" viewBox="0 0 20 20" width="20">
+      <circle cx="8.5" cy="8.5" r="4.5" stroke="currentColor" strokeWidth="1.5" />
+      <path d="m15 15-2.5-2.5" stroke="currentColor" strokeLinecap="round" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
 function ActivityIcon() {
   return (
     <svg aria-hidden="true" fill="none" height="20" viewBox="0 0 20 20" width="20">
@@ -73,6 +82,7 @@ function SettingsIcon() {
 export const navigationItems: NavigationItem[] = [
   { href: "/workspace", label: "Overview", icon: <OverviewIcon /> },
   { href: "/workspace/projects", label: "Projects", icon: <ProjectsIcon /> },
+  { href: "/workspace/search", label: "Search", icon: <SearchIcon /> },
   { href: "/workspace/activity", label: "Activity", icon: <ActivityIcon /> },
   { href: "/workspace/settings", label: "Settings", icon: <SettingsIcon /> }
 ];

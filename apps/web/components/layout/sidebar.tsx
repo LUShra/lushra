@@ -5,8 +5,8 @@ import { NavigationLink } from "./navigation-link";
 import styles from "./sidebar.module.css";
 
 export function Sidebar() {
-  const [overview, projects, activity, settings] = navigationItems;
-  const primaryItems = [overview, projects, activity];
+  const settings = navigationItems[navigationItems.length - 1];
+  const primaryItems = navigationItems.slice(0, -1);
 
   return (
     <aside className={styles.root}>
