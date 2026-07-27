@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 
 export type ReviewActionState = {
@@ -62,6 +63,12 @@ async function transitionArtifactStatus(
     .single();
 
   if (error) {
+    logError("transition_artifact_status_failed", {
+      artifactId,
+      toStatus,
+      fromStatuses: fromStatuses.join(","),
+      message: error.message
+    });
     return { status: "error", message: failureMessage };
   }
 

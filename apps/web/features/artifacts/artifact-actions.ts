@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 import { ARTIFACT_TYPES, type ArtifactType } from "./artifact-types";
 
@@ -78,6 +79,10 @@ export async function createArtifactAction(
     .single();
 
   if (error || !data) {
+    if (error) {
+      logError("create_artifact_failed", { projectId, workspaceId, message: error.message });
+    }
+
     return { status: "error", message: "That artifact could not be created." };
   }
 
@@ -123,6 +128,14 @@ export async function createArtifactFromMessageAction(
     .single();
 
   if (error || !data) {
+    if (error) {
+      logError("create_artifact_from_message_failed", {
+        projectId,
+        workspaceId,
+        message: error.message
+      });
+    }
+
     return { status: "error", message: "That message could not be saved as an artifact." };
   }
 
@@ -163,6 +176,7 @@ export async function renameArtifactAction(
     .single();
 
   if (error) {
+    logError("rename_artifact_failed", { artifactId, projectId, message: error.message });
     return { status: "error", message: "That artifact could not be renamed." };
   }
 
@@ -201,6 +215,7 @@ export async function updateArtifactContentAction(
     .single();
 
   if (error) {
+    logError("update_artifact_content_failed", { artifactId, projectId, message: error.message });
     return { status: "error", message: "That artifact's content could not be saved." };
   }
 
