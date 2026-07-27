@@ -2,6 +2,7 @@ import { cache } from "react";
 
 import type { Tables } from "@lushra/database";
 
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 
 export type PersonalWorkspace = Tables<"workspaces">;
@@ -24,7 +25,7 @@ export const getOrCreatePersonalWorkspace = cache(
 
     if (error || !data) {
       if (error) {
-        console.error("ensure_personal_workspace failed:", error.message);
+        logError("ensure_personal_workspace_failed", { message: error.message });
       }
 
       return { status: "error" };

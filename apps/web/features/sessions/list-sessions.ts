@@ -1,5 +1,6 @@
 import type { Tables } from "@lushra/database";
 
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 
 export type Session = Tables<"sessions">;
@@ -23,7 +24,7 @@ export async function listSessions(
 
   if (error || !data) {
     if (error) {
-      console.error("listSessions failed:", error.message);
+      logError("list_sessions_failed", { projectId, workspaceId, message: error.message });
     }
 
     return { status: "error" };
@@ -59,7 +60,7 @@ export async function getSession(
 
   if (error || !data) {
     if (error) {
-      console.error("getSession failed:", error.message);
+      logError("get_session_failed", { sessionId, projectId, workspaceId, message: error.message });
     }
 
     return { status: "error" };

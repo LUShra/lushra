@@ -1,3 +1,4 @@
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 
 export type WorkspaceUsage = {
@@ -44,7 +45,7 @@ export async function getWorkspaceUsage(workspaceId: string): Promise<WorkspaceU
   const error = projects.error ?? sessions.error ?? artifacts.error ?? sources.error;
 
   if (error) {
-    console.error("getWorkspaceUsage failed:", error.message);
+    logError("get_workspace_usage_failed", { workspaceId, message: error.message });
     return { status: "error" };
   }
 

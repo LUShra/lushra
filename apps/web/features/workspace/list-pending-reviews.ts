@@ -1,5 +1,6 @@
 import type { Tables } from "@lushra/database";
 
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 
 export type PendingReviewArtifact = Tables<"artifacts"> & { projectName: string };
@@ -29,7 +30,7 @@ export async function listPendingReviewArtifacts(
 
   if (error || !artifacts) {
     if (error) {
-      console.error("listPendingReviewArtifacts failed:", error.message);
+      logError("list_pending_review_artifacts_failed", { workspaceId, message: error.message });
     }
 
     return { status: "error" };
@@ -48,7 +49,10 @@ export async function listPendingReviewArtifacts(
 
   if (projectsError || !projects) {
     if (projectsError) {
-      console.error("listPendingReviewArtifacts (projects) failed:", projectsError.message);
+      logError("list_pending_review_artifacts_projects_failed", {
+        workspaceId,
+        message: projectsError.message
+      });
     }
 
     return { status: "error" };

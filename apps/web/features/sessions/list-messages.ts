@@ -1,5 +1,6 @@
 import type { Tables } from "@lushra/database";
 
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 
 export type Message = Tables<"messages">;
@@ -24,7 +25,7 @@ export async function listMessages(
 
   if (error || !data) {
     if (error) {
-      console.error("listMessages failed:", error.message);
+      logError("list_messages_failed", { sessionId, workspaceId, message: error.message });
     }
 
     return { status: "error" };

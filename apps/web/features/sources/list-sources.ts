@@ -1,5 +1,6 @@
 import type { Tables } from "@lushra/database";
 
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 
 export type Source = Tables<"sources">;
@@ -21,7 +22,7 @@ export async function listSources(
 
   if (error || !data) {
     if (error) {
-      console.error("listSources failed:", error.message);
+      logError("list_sources_failed", { projectId, workspaceId, message: error.message });
     }
 
     return { status: "error" };

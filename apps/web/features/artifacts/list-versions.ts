@@ -1,5 +1,6 @@
 import type { Tables } from "@lushra/database";
 
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 
 export type ArtifactVersion = Tables<"artifact_versions">;
@@ -24,7 +25,11 @@ export async function listArtifactVersions(
 
   if (error || !data) {
     if (error) {
-      console.error("listArtifactVersions failed:", error.message);
+      logError("list_artifact_versions_failed", {
+        artifactId,
+        workspaceId,
+        message: error.message
+      });
     }
 
     return { status: "error" };

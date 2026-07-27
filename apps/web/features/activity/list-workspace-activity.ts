@@ -1,5 +1,6 @@
 import type { Tables } from "@lushra/database";
 
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 
 type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
@@ -37,7 +38,10 @@ async function fetchProjectNames(
 
   if (error || !data) {
     if (error) {
-      console.error("listWorkspaceActivity (project lookup) failed:", error.message);
+      logError("list_workspace_activity_project_lookup_failed", {
+        workspaceId,
+        message: error.message
+      });
     }
 
     return null;
@@ -202,7 +206,7 @@ export async function listWorkspaceActivity(
     projectsResult.error ?? sessionsResult.error ?? artifactsResult.error ?? sourcesResult.error;
 
   if (error) {
-    console.error("listWorkspaceActivity failed:", error.message);
+    logError("list_workspace_activity_failed", { workspaceId, message: error.message });
     return { status: "error" };
   }
 
