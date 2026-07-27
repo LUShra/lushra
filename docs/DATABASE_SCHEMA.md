@@ -110,6 +110,21 @@ Product Definition §30 Artifact entity (Milestone 13): a durable unit of create
 
 `owner_id`, `workspace_id`, and `project_id` cannot be changed by an ordinary `UPDATE` -- `prevent_ownership_reassignment()` (§3) was extended in Milestone 13 to cover `artifacts` the same way it already covered `workspaces`/`projects`. No `DELETE` policy this milestone: archiving/deletion for artifacts is deferred (§8).
 
+### 2.7 `public.artifact_versions`
+
+Product Definition §30 Artifact Version entity (Milestone 14): a recorded, meaningful evolution of an artifact. This milestone ships save + restore only -- no diff/comparison UI, named versions, or duplication yet (see §6, §8).
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | `uuid` | Primary key, `default gen_random_uuid()` |
+| `artifact_id` | `uuid` | `not null references artifacts(id) on delete cascade` |
+| `workspace_id` | `uuid` | `not null references workspaces(id) on delete cascade`; denormalized from the owning artifact |
+| `created_by` | `uuid` | `not null references auth.users(id) on delete cascade` |
+| `content` | `text` | nullable, ≤50,000 characters -- a snapshot of `artifacts.content` at save time; `title` is not versioned |
+| `created_at` | `timestamptz` | `not null default now()` |
+
+Immutable once recorded -- no `UPDATE`/`DELETE` policy exists at all, matching `messages`' treatment. Because nothing can ever update this table, `prevent_ownership_reassignment()` does not need extending here (unlike `artifacts` in Milestone 13): there is no `UPDATE` path for an ownership column to be reassigned through.
+
 ---
 
 ## 3. Functions
@@ -129,7 +144,7 @@ All `SECURITY DEFINER` functions: `search_path` pinned, every reference schema-q
 
 ## 4. Row-Level Security
 
-RLS is enabled on all six tables. `anon` has zero policies anywhere, so unauthenticated requests receive zero rows or a permission-denied error, never real data.
+RLS is enabled on all seven tables. `anon` has zero policies anywhere, so unauthenticated requests receive zero rows or a permission-denied error, never real data.
 
 | Table | SELECT | INSERT | UPDATE | DELETE |
 |---|---|---|---|---|
@@ -139,6 +154,7 @@ RLS is enabled on all six tables. `anon` has zero policies anywhere, so unauthen
 | `sessions` | member (`is_workspace_member(workspace_id)`) | member + `owner_id = auth.uid()` | none | none |
 | `messages` | member (`is_workspace_member(workspace_id)`) | member + `sender_id = auth.uid()` + `role = 'user'` (Milestone 12) for ordinary inserts; `role='assistant'` rows only via `insert_assistant_message()` (bypasses RLS as `SECURITY DEFINER`) | none | none |
 | `artifacts` | member (`is_workspace_member(workspace_id)`) | member + `owner_id = auth.uid()` | member | none (Milestone 13) |
+| `artifact_versions` | member (`is_workspace_member(workspace_id)`) | member + `created_by = auth.uid()` | none | none (Milestone 14) |
 
 Ownership columns (`workspaces.owner_id`, `projects.owner_id`, `projects.workspace_id`) cannot be changed by an ordinary `UPDATE` even by a workspace member -- `prevent_ownership_reassignment()` rejects the change regardless of what any RLS policy would otherwise permit, closing a gap a `WITH CHECK owner_id = auth.uid()` policy alone would miss (a user owning two workspaces could otherwise move a project between them).
 
@@ -182,6 +198,8 @@ Milestone 8 implements create/rename/archive/restore entirely in application cod
 
 **Milestone 13 (Artifacts)** begins Roadmap §13 (Artifact System): creation and editing only, via one migration, `20260726234601_create_artifacts_table.sql` (§2.6, §3, §4), plus a same-session corrective, `20260726234658_repin_prevent_ownership_reassignment_search_path.sql` (see §3's note on `prevent_ownership_reassignment()`). Application code lives in `apps/web/features/artifacts/`: `listArtifacts`/`getArtifact` (scoped by `id`, `project_id`, and `workspace_id` together, the same defense-in-depth pattern as `getSession`), and four actions -- `createArtifactAction` (a standalone quick-create form on Project Home: title + type), `createArtifactFromMessageAction` (the First-Value Journey bridge, Experience Architecture §13: a "Save as artifact" button on every session message inserts a new artifact with that message's content, a title derived from its first line, and `type: 'brief'` as the one-click default), `renameArtifactAction`, and `updateArtifactContentAction` -- all following the same `.select().single()` honest-failure pattern as every other mutation in this project. A new `/workspace/projects/[id]/artifacts/[artifactId]` page shows and edits an artifact's title and content. Project Home gains an "Artifacts" section (list + quick-create), mirroring the Sessions section's structure. `packages/ui` gains one new primitive, `Select` (`select.tsx`/`select.module.css`), needed for the type picker -- built to the exact same `useFieldContext()`/`invalid`/`id`-from-context pattern as `Input`, not a parallel design system. No versioning (Experience Architecture §26), review (§27, Product Definition §20 item 10), export (§29), or archive/delete for artifacts yet -- each is its own later milestone (§8); a single mutable row is the correct minimal shape until versioning genuinely exists.
 
+**Milestone 14 (Artifact Versions)** continues Roadmap §13: save + restore only, via one migration, `20260727001037_create_artifact_versions_table.sql` (§2.7, §4). Application code lives in `apps/web/features/artifacts/`: `listArtifactVersions` (most-recent-first, scoped by `artifact_id` and `workspace_id`), and two actions -- `saveArtifactVersionAction` snapshots the artifact's *current, live* `content` (read server-side from the `artifacts` row itself, never trusted from the client, since the Save Version button carries no textarea of its own) into a new, immutable `artifact_versions` row; `restoreArtifactVersionAction` copies a past version's `content` back onto the live artifact via the existing `.select().single()` honest-failure pattern, then -- per Product Definition §30's "restoring creates a new version rather than overwriting history" -- inserts *another* new version row capturing that restored state, so the act of restoring itself becomes part of the permanent history rather than silently reusing or deleting the old entry. That second insert's failure is logged and swallowed rather than surfaced as a user-facing error: the restore the user actually asked for already succeeded by that point, and a failed history record is a non-fatal, best-effort concern (same pattern as `sendMessageAction`'s AI-reply insert in Milestone 12). The artifact detail page gains a "Versions" section: a numbered history list (oldest is "Version 1", ascending, independent of the most-recent-first display order) with a "Restore" action per row, and a "Save version" button. `title` is deliberately not versioned -- only `content` is snapshotted, since a version is "a meaningful evolution" of the artifact's body specifically. No diff/comparison UI, named versions, or duplication yet -- each is its own later milestone (§8).
+
 ---
 
 ## 7. Type generation
@@ -192,7 +210,7 @@ Milestone 8 implements create/rename/archive/restore entirely in application cod
 
 ## 8. Deferred
 
-Not yet implemented, each belonging to a later, distinct roadmap phase: multiple workspaces per user, workspace switching, workspace invitations or additional membership roles, Organisation as a tier above Workspace, guided project creation/duplication, source materials as an attachable Source entity and Project Context as an independent table, the `draft`/`paused`/`completed`/`deleted` project states, the fuller Workspace Overview experience (recent work, pending reviews, next actions beyond a project count), session naming/status, a second AI provider and real provider-selection logic, streaming/interrupt/retry AI interactions, Assisted and Controlled Execution automation levels (Product Definition §17), Artifact Version and versioning/comparison/restore (Experience Architecture §26), Review workflow and states (§27, Product Definition §20 item 10), Export (§29), artifact archive/delete/duplication, Activity Event, AI Capability/Provider as first-class schema entities, Usage Record, Source/Asset, Decision/Audit Event, Notifications. `create_workspace(text)`'s eventual removal (currently unused, left in place) is also unresolved.
+Not yet implemented, each belonging to a later, distinct roadmap phase: multiple workspaces per user, workspace switching, workspace invitations or additional membership roles, Organisation as a tier above Workspace, guided project creation/duplication, source materials as an attachable Source entity and Project Context as an independent table, the `draft`/`paused`/`completed`/`deleted` project states, the fuller Workspace Overview experience (recent work, pending reviews, next actions beyond a project count), session naming/status, a second AI provider and real provider-selection logic, streaming/interrupt/retry AI interactions, Assisted and Controlled Execution automation levels (Product Definition §17), diff/comparison UI between artifact versions, named versions, version duplication (Experience Architecture §26), Review workflow and states (§27, Product Definition §20 item 10), Export (§29), artifact archive/delete/duplication, Activity Event, AI Capability/Provider as first-class schema entities, Usage Record, Source/Asset, Decision/Audit Event, Notifications. `create_workspace(text)`'s eventual removal (currently unused, left in place) is also unresolved.
 
 ---
 
@@ -211,3 +229,4 @@ This document is updated whenever a migration changes the live schema it describ
 | 1.4 | 2026-07-26 | Milestone 11: added `public.sessions` and `public.messages` (§2.4, §2.5) via migration `20260726120000_create_sessions_and_messages.sql`; added their RLS rows to §4; documented the new Sessions section on Project Home and the session detail page in §6; updated §8 Deferred accordingly. |
 | 1.5 | 2026-07-26 | Milestone 12: added `messages.role`, made `messages.sender_id` nullable, added the role/sender consistency CHECK, and added `insert_assistant_message()` (§2.5, §3, §4) via migrations `20260726232634_add_message_role_and_assistant_reply.sql` and `20260726232729_update_session_and_message_table_comments.sql`; documented the AI Orchestration Layer, the OpenAI provider, and `sendMessageAction`'s AI-reply wiring in §6; updated §8 Deferred accordingly. |
 | 1.6 | 2026-07-26 | Milestone 13: added `public.artifacts` (§2.6) and extended `prevent_ownership_reassignment()` to cover it (§3) via migrations `20260726234601_create_artifacts_table.sql` and `20260726234658_repin_prevent_ownership_reassignment_search_path.sql` (the latter fixing a search_path regression the former introduced); added its RLS row to §4; documented artifact creation/editing and the session-to-artifact bridge in §6; updated §8 Deferred accordingly. |
+| 1.7 | 2026-07-27 | Milestone 14: added `public.artifact_versions` (§2.7) via migration `20260727001037_create_artifact_versions_table.sql`; added its RLS row to §4; documented save/restore versioning in §6; updated §8 Deferred accordingly. |

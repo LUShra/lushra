@@ -19,6 +19,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      artifact_versions: {
+        Row: {
+          artifact_id: string
+          content: string | null
+          created_at: string
+          created_by: string
+          id: string
+          workspace_id: string
+        }
+        Insert: {
+          artifact_id: string
+          content?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          workspace_id: string
+        }
+        Update: {
+          artifact_id?: string
+          content?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "artifact_versions_artifact_id_fkey"
+            columns: ["artifact_id"]
+            isOneToOne: false
+            referencedRelation: "artifacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "artifact_versions_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       artifacts: {
         Row: {
           content: string | null
