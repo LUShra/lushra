@@ -83,7 +83,9 @@ export default async function ProjectHomePage({ params }: ProjectHomePageProps) 
             {sourcesResult.status === "error" ? (
               <Text color="secondary">We couldn&apos;t load sources right now.</Text>
             ) : sourcesResult.sources.length === 0 ? (
-              <Text color="secondary">No sources yet. Add a link or paste text to inform this project's context.</Text>
+              <Text color="secondary">
+                No sources yet. Add a link or paste text to inform this project&apos;s context.
+              </Text>
             ) : (
               <Stack gap={3}>
                 {sourcesResult.sources.map((source) => (
