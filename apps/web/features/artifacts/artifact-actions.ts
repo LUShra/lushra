@@ -151,9 +151,13 @@ export async function renameArtifactAction(
 
   const { supabase } = await requireUser();
 
+  // A title change invalidates whatever was previously reviewed -- reset
+  // to draft (Milestone 15) so an "Approved"/"Rejected" badge can never
+  // silently diverge from what a reviewer actually saw. A no-op when
+  // already draft.
   const { error } = await supabase
     .from("artifacts")
-    .update({ title })
+    .update({ title, status: "draft" })
     .eq("id", artifactId)
     .select()
     .single();
@@ -187,9 +191,11 @@ export async function updateArtifactContentAction(
 
   const { supabase } = await requireUser();
 
+  // Same reasoning as renameArtifactAction: a content change invalidates
+  // whatever was previously reviewed, so it resets status to draft too.
   const { error } = await supabase
     .from("artifacts")
-    .update({ content })
+    .update({ content, status: "draft" })
     .eq("id", artifactId)
     .select()
     .single();
