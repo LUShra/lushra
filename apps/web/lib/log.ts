@@ -11,10 +11,10 @@ type LogContext = Record<string, string | number | boolean | null | undefined>;
 export function logError(event: string, context?: LogContext): void {
   console.error(
     JSON.stringify({
+      ...context,
       level: "error",
       event,
-      timestamp: new Date().toISOString(),
-      ...context
+      timestamp: new Date().toISOString()
     })
   );
 }

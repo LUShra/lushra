@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 
 import {
   Button,
@@ -47,6 +47,31 @@ export function ProjectListItem({ project }: ProjectListItemProps) {
 
   const isArchived = project.status === "archived";
 
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const renameButtonRef = useRef<HTMLButtonElement>(null);
+  const returnFocusOnCancelRef = useRef(false);
+
+  /**
+   * Renaming swaps this card's heading+button for a form entirely rather
+   * than showing/hiding a persistent element, so without this, activating
+   * Rename (or cancelling out of it) drops keyboard/screen-reader focus
+   * to the document body -- the trigger button is gone from the DOM by
+   * the time React re-renders.
+   */
+  useEffect(() => {
+    if (isRenaming) {
+      nameInputRef.current?.focus();
+    } else if (returnFocusOnCancelRef.current) {
+      renameButtonRef.current?.focus();
+      returnFocusOnCancelRef.current = false;
+    }
+  }, [isRenaming]);
+
+  function cancelRename() {
+    returnFocusOnCancelRef.current = true;
+    setIsRenaming(false);
+  }
+
   return (
     <Card variant="raised">
       <Stack gap={4}>
@@ -61,6 +86,7 @@ export function ProjectListItem({ project }: ProjectListItemProps) {
                   defaultValue={project.name}
                   maxLength={160}
                   name="name"
+                  ref={nameInputRef}
                   required
                   type="text"
                 />
@@ -77,12 +103,7 @@ export function ProjectListItem({ project }: ProjectListItemProps) {
                 <Button loading={isRenamePending} size="small" type="submit">
                   Save
                 </Button>
-                <Button
-                  onClick={() => setIsRenaming(false)}
-                  size="small"
-                  type="button"
-                  variant="secondary"
-                >
+                <Button onClick={cancelRename} size="small" type="button" variant="secondary">
                   Cancel
                 </Button>
               </Inline>
@@ -99,6 +120,7 @@ export function ProjectListItem({ project }: ProjectListItemProps) {
 
             <Button
               onClick={() => setIsRenaming(true)}
+              ref={renameButtonRef}
               size="small"
               type="button"
               variant="secondary"

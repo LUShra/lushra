@@ -15,7 +15,10 @@ export default function ErrorPage({
     <main className="state-page">
       <p className="eyebrow">Application error</p>
       <h1>Something went wrong</h1>
-      <p>{error.message || "An unexpected error occurred."}</p>
+      <p>
+        We couldn&apos;t complete that. Try again, or come back in a moment.
+        {error.digest ? ` (Reference: ${error.digest})` : null}
+      </p>
 
       <button
         className="button button--primary"

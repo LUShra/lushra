@@ -44,9 +44,14 @@ export default async function ProjectHomePage({ params }: ProjectHomePageProps) 
 
   const { project } = projectResult;
   const isArchived = project.status === "archived";
-  const sessionsResult = await listSessions(project.id, project.workspace_id);
-  const artifactsResult = await listArtifacts(project.id, project.workspace_id);
-  const sourcesResult = await listSources(project.id, project.workspace_id);
+
+  // Independent reads, no data dependency between them -- fetched in
+  // parallel rather than three sequential round trips.
+  const [sessionsResult, artifactsResult, sourcesResult] = await Promise.all([
+    listSessions(project.id, project.workspace_id),
+    listArtifacts(project.id, project.workspace_id),
+    listSources(project.id, project.workspace_id)
+  ]);
 
   return (
     <PageFrame

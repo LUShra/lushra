@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 
 import {
   Button,
@@ -47,6 +47,45 @@ export function SourceListItem({ source, projectId }: SourceListItemProps) {
     initialState
   );
 
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const confirmHeadingRef = useRef<HTMLParagraphElement>(null);
+  const editButtonRef = useRef<HTMLButtonElement>(null);
+  const removeButtonRef = useRef<HTMLButtonElement>(null);
+  const returnFocusToRef = useRef<"edit" | "remove" | null>(null);
+
+  /**
+   * Each mode swaps this card's entire content rather than showing/hiding
+   * a persistent element, so without this, activating Edit/Remove (or
+   * cancelling back out of either) silently drops keyboard/screen-reader
+   * focus to the document body -- the trigger element is gone from the
+   * DOM by the time React re-renders. Entering a mode focuses that mode's
+   * first meaningful element; leaving one restores focus to whichever
+   * button opened it, the standard pattern for a dismissed inline editor.
+   */
+  useEffect(() => {
+    if (mode === "edit") {
+      titleInputRef.current?.focus();
+    } else if (mode === "confirmDelete") {
+      confirmHeadingRef.current?.focus();
+    } else if (returnFocusToRef.current === "edit") {
+      editButtonRef.current?.focus();
+      returnFocusToRef.current = null;
+    } else if (returnFocusToRef.current === "remove") {
+      removeButtonRef.current?.focus();
+      returnFocusToRef.current = null;
+    }
+  }, [mode]);
+
+  function cancelEdit() {
+    returnFocusToRef.current = "edit";
+    setMode("view");
+  }
+
+  function cancelDelete() {
+    returnFocusToRef.current = "remove";
+    setMode("view");
+  }
+
   const type = source.type as SourceType;
   const typeLabel = SOURCE_TYPE_LABELS[type] ?? source.type;
   const updateFieldErrors = updateState.fieldErrors ?? {};
@@ -66,6 +105,7 @@ export function SourceListItem({ source, projectId }: SourceListItemProps) {
                 defaultValue={source.title}
                 maxLength={200}
                 name="title"
+                ref={titleInputRef}
                 required
                 type="text"
               />
@@ -105,12 +145,7 @@ export function SourceListItem({ source, projectId }: SourceListItemProps) {
               <Button loading={isUpdatePending} size="small" type="submit">
                 Save
               </Button>
-              <Button
-                onClick={() => setMode("view")}
-                size="small"
-                type="button"
-                variant="secondary"
-              >
+              <Button onClick={cancelEdit} size="small" type="button" variant="secondary">
                 Cancel
               </Button>
             </Inline>
@@ -124,7 +159,7 @@ export function SourceListItem({ source, projectId }: SourceListItemProps) {
     return (
       <Card variant="raised">
         <Stack gap={3}>
-          <Text color="secondary">
+          <Text color="secondary" ref={confirmHeadingRef} tabIndex={-1}>
             Remove &quot;{source.title}&quot;? This cannot be undone.
           </Text>
 
@@ -135,12 +170,7 @@ export function SourceListItem({ source, projectId }: SourceListItemProps) {
               <Button loading={isDeletePending} size="small" type="submit" variant="danger">
                 Confirm removal
               </Button>
-              <Button
-                onClick={() => setMode("view")}
-                size="small"
-                type="button"
-                variant="secondary"
-              >
+              <Button onClick={cancelDelete} size="small" type="button" variant="secondary">
                 Cancel
               </Button>
             </Inline>
@@ -173,11 +203,18 @@ export function SourceListItem({ source, projectId }: SourceListItemProps) {
         )}
 
         <Inline gap={3}>
-          <Button onClick={() => setMode("edit")} size="small" type="button" variant="secondary">
+          <Button
+            onClick={() => setMode("edit")}
+            ref={editButtonRef}
+            size="small"
+            type="button"
+            variant="secondary"
+          >
             Edit
           </Button>
           <Button
             onClick={() => setMode("confirmDelete")}
+            ref={removeButtonRef}
             size="small"
             type="button"
             variant="secondary"

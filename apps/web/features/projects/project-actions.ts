@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 
+import { logError } from "@/lib/log";
 import { createClient } from "@/lib/supabase/server";
 
 export type ProjectActionState = {
@@ -71,7 +72,8 @@ export async function createProjectAction(
   });
 
   if (error) {
-    return { status: "error", message: error.message };
+    logError("create_project_failed", { workspaceId, message: error.message });
+    return { status: "error", message: "That project could not be created." };
   }
 
   redirect("/workspace/projects");
@@ -102,6 +104,7 @@ export async function renameProjectAction(
     .single();
 
   if (error) {
+    logError("rename_project_failed", { projectId, message: error.message });
     return { status: "error", message: "That project could not be renamed." };
   }
 
@@ -137,6 +140,7 @@ export async function updateProjectDescriptionAction(
     .single();
 
   if (error) {
+    logError("update_project_description_failed", { projectId, message: error.message });
     return { status: "error", message: "That project's description could not be saved." };
   }
 
@@ -195,6 +199,7 @@ export async function updateProjectContextAction(
     .single();
 
   if (error) {
+    logError("update_project_context_failed", { projectId, message: error.message });
     return { status: "error", message: "That project's context could not be saved." };
   }
 
@@ -221,6 +226,7 @@ export async function archiveProjectAction(
     .single();
 
   if (error) {
+    logError("archive_project_failed", { projectId, message: error.message });
     return { status: "error", message: "That project could not be archived." };
   }
 
@@ -247,6 +253,7 @@ export async function restoreProjectAction(
     .single();
 
   if (error) {
+    logError("restore_project_failed", { projectId, message: error.message });
     return { status: "error", message: "That project could not be restored." };
   }
 
